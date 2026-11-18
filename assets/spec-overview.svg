@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320" width="100%" height="auto" role="img" aria-labelledby="specSvgTitle specSvgDesc">
+  <title id="specSvgTitle">Barcode Label Studio — Symbology &amp; Module Structure Specification</title>
+  <desc id="specSvgDesc">Technical comparison of Code 128B/C, Code 39, EAN-13, ITF-14, and QR Code v1–v6 bit and module geometry.</desc>
+  <defs>
+    <linearGradient id="specBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1e293b" />
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="320" rx="14" fill="url(#specBg)" stroke="#334155" stroke-width="1.5" />
+  <text x="32" y="38" fill="#f8fafc" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="18" font-weight="700">📐 Symbology Encoding &amp; Bit-Level Anatomy Specification</text>
+  <text x="1168" y="38" fill="#38bdf8" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="600" text-anchor="end">ISO/IEC 15417 • 16388 • 16390 • 18004 • GS1</text>
+
+  <!-- 1. Code 128 -->
+  <g transform="translate(28, 60)">
+    <rect width="216" height="232" rx="10" fill="#1e293b" stroke="#38bdf8" stroke-width="1.2" />
+    <rect x="14" y="14" width="188" height="26" rx="5" fill="#0284c7" />
+    <text x="108" y="31" fill="#ffffff" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="700" text-anchor="middle">1. CODE 128 (B/C)</text>
+    <rect x="20" y="52" width="176" height="68" rx="4" fill="#ffffff" />
+    <path d="M32,60 v50 M36,60 v50 M42,60 v50 M48,60 v50 M56,60 v50 M62,60 v50 M66,60 v50 M74,60 v50 M82,60 v50 M88,60 v50 M96,60 v50 M102,60 v50 M110,60 v50 M116,60 v50 M124,60 v50 M130,60 v50 M138,60 v50 M146,60 v50 M152,60 v50 M160,60 v50 M168,60 v50 M176,60 v50 M182,60 v50" stroke="#0f172a" stroke-width="2.2" />
+    <text x="20" y="142" fill="#e2e8f0" font-family="-apple-system, sans-serif" font-size="11.5" font-weight="600">• 11 modules / symbol</text>
+    <text x="20" y="162" fill="#cbd5e1" font-family="-apple-system, sans-serif" font-size="11">• Stop = 13 modules (106)</text>
+    <text x="20" y="182" fill="#cbd5e1" font-family="-apple-system, sans-serif" font-size="11">• 128C: 2 digits / symbol</text>
+    <text x="20" y="202" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="600">Checksum: Modulo 103</text>
+  </g>
+
+  <!-- 2. Code 39 -->
+  <g transform="translate(260, 60)">
+    <rect width="216" height="232" rx="10" fill="#1e293b" stroke="#60a5fa" stroke-width="1.2" />
+    <rect x="14" y="14" width="188" height="26" rx="5" fill="#2563eb" />
+    <text x="108" y="31" fill="#ffffff" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="700" text-anchor="middle">2. CODE 39 (3 OF 9)</text>
+    <rect x="20" y="52" width="176" height="68" rx="4" fill="#ffffff" />
+    <path d="M32,60 v50 M38,60 v50 M48,60 v50 M54,60 v50 M64,60 v50 M74,60 v50 M80,60 v50 M90,60 v50 M100,60 v50 M106,60 v50 M116,60 v50 M126,60 v50 M132,60 v50 M142,60 v50 M152,60 v50 M162,60 v50 M170,60 v50 M180,60 v50" stroke="#0f172a" stroke-width="2.6" />
+    <text x="20" y="142" fill="#e2e8f0" font-family="-apple-system, sans-serif" font-size="11.5" font-weight="600">• 9 elements (3 wide, 6 narrow)</text>
+    <text x="20" y="162" fill="#cbd5e1" font-family="-apple-system, sans-serif" font-size="11">• Framed by * start / stop</text>
+    <text x="20" y="182" fill="#cbd5e1" font-family="-apple-system, sans-serif" font-size="11">• 43 chars: 0-9, A-Z, -.$/+%</text>
+    <text x="20" y="202" fill="#60a5fa" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="600">Telemetry: Modulo 43</text>
+  </g>
+
+  <!-- 3. EAN-13 -->
+  <g transform="translate(492, 60)">
+    <rect width="216" height="232" rx="10" fill="#1e293b" stroke="#a78bfa" stroke-width="1.2" />
+    <rect x="14" y="14" width="188" height="26" rx="5" fill="#7c3aed" />
+    <text x="108" y="31" fill="#ffffff" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="700" text-anchor="middle">3. GS1 EAN-13</text>
+    <rect x="20" y="52" width="176" height="68" rx="4" fill="#ffffff" />
+    <!-- Guards + Bars -->
+    <path d="M32,58 v56 M36,58 v56 M106,58 v56 M110,58 v56 M180,58 v56 M184,58 v56" stroke="#7c3aed" stroke-width="2" />
+    <path d="M44,60 v46 M50,60 v46 M58,60 v46 M66,60 v46 M74,60 v46 M82,60 v46 M90,60 v46 M98,60 v46 M118,60 v46 M126,60 v46 M134,60 v46 M142,60 v46 M150,60 v46 M158,60 v46 M166,60 v46 M172,60 v46" stroke="#0f172a" stroke-width="2.2" />
+    <text x="20" y="142" fill="#e2e8f0" font-family="-apple-system, sans-serif" font-size="11.5" font-weight="600">• Fixed 95 total modules</text>
+    <text x="20" y="162" fill="#cbd5e1" font-family="-apple-system, sans-serif" font-size="11">• L/G parity + R-set halves</text>
+    <text x="20" y="182" fill="#cbd5e1" font-family="-apple-system, sans-serif" font-size="11">• Auto 13th digit repair</text>
+    <text x="20" y="202" fill="#a78bfa" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="600">Checksum: GS1 Mod 10</text>
+  </g>
+
+  <!-- 4. ITF -->
+  <g transform="translate(724, 60)">
+    <rect width="216" height="232" rx="10" fill="#1e293b" stroke="#34d399" stroke-width="1.2" />
+    <rect x="14" y="14" width="188" height="26" rx="5" fill="#059669" />
+    <text x="108" y="31" fill="#ffffff" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="700" text-anchor="middle">4. ITF (2 OF 5)</text>
+    <rect x="20" y="52" width="176" height="68" rx="4" fill="#ffffff" />
+    <path d="M32,60 v50 M40,60 v50 M50,60 v50 M56,60 v50 M68,60 v50 M78,60 v50 M84,60 v50 M96,60 v50 M106,60 v50 M112,60 v50 M124,60 v50 M134,60 v50 M142,60 v50 M154,60 v50 M164,60 v50 M176,60 v50" stroke="#0f172a" stroke-width="3.2" />
+    <text x="20" y="142" fill="#e2e8f0" font-family="-apple-system, sans-serif" font-size="11.5" font-weight="600">• Interleaved digit pairs</text>
+    <text x="20" y="162" fill="#cbd5e1" font-family="-apple-system, sans-serif" font-size="11">• Bars = d1, Spaces = d2</text>
+    <text x="20" y="182" fill="#cbd5e1" font-family="-apple-system, sans-serif" font-size="11">• Auto leading-0 on odd len</text>
+    <text x="20" y="202" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="600">Parity: 2-of-5 Weights</text>
+  </g>
+
+  <!-- 5. QR Code -->
+  <g transform="translate(956, 60)">
+    <rect width="216" height="232" rx="10" fill="#1e293b" stroke="#f59e0b" stroke-width="1.2" />
+    <rect x="14" y="14" width="188" height="26" rx="5" fill="#d97706" />
+    <text x="108" y="31" fill="#ffffff" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="700" text-anchor="middle">5. QR CODE (v1–v6)</text>
+    <rect x="68" y="50" width="80" height="72" rx="4" fill="#ffffff" />
+    <g transform="translate(76, 54)" fill="#0f172a">
+      <path d="M0,0 h18 v18 h-18 z M3,3 v12 h12 v-12 z M6,6 h6 v6 h-6 z" fill-rule="evenodd" />
+      <path d="M46,0 h18 v18 h-18 z M49,3 v12 h12 v-12 z M52,6 h6 v6 h-6 z" fill-rule="evenodd" />
+      <path d="M0,46 h18 v18 h-18 z M3,49 v12 h12 v-12 z M6,52 h6 v6 h-6 z" fill-rule="evenodd" />
+      <rect x="24" y="6" width="16" height="6" />
+      <rect x="24" y="24" width="16" height="16" fill="#2563eb" rx="2" />
+      <rect x="46" y="28" width="14" height="10" />
+      <rect x="26" y="48" width="28" height="12" />
+    </g>
+    <text x="20" y="142" fill="#e2e8f0" font-family="-apple-system, sans-serif" font-size="11.5" font-weight="600">• 21×21 (v1) to 41×41 (v6)</text>
+    <text x="20" y="162" fill="#cbd5e1" font-family="-apple-system, sans-serif" font-size="11">• Alnum &amp; UTF-8 Byte modes</text>
+    <text x="20" y="182" fill="#cbd5e1" font-family="-apple-system, sans-serif" font-size="11">• Center brand logo overlay</text>
+    <text x="20" y="202" fill="#fbbf24" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="600">ECC: GF(256) Reed-Solomon</text>
+  </g>
+</svg>

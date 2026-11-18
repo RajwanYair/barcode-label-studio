@@ -15,7 +15,9 @@
 <p align="center">
   <strong><a href="https://rajwanyair.github.io/barcode-label-studio/">🚀 Launch Live Web App (GitHub Pages)</a></strong>
   ·
-  <a href="https://raw.githack.com/RajwanYair/barcode-label-studio/main/index.html">🌐 Global CDN Mirror (githack)</a>
+  <a href="SPEC.md">📐 Technical Specification (SPEC.md)</a>
+  ·
+  <a href="ROADMAP.md">🗺️ Sprint Roadmap (ROADMAP.md)</a>
   ·
   <a href="https://github.com/RajwanYair/barcode-label-studio/releases/latest">📦 Download Single-File Release</a>
   ·
@@ -28,39 +30,39 @@
 
 ## 📖 Overview
 
-**Barcode Label Studio** is an industrial-grade, zero-backend **1D & 2D QR barcode workbench and batch die-cut sticker sheet printing studio** packaged entirely inside a single, self-contained [`index.html`](index.html) file.
+🏷️ **Barcode Label Studio** is a **100% free and open-source (MIT)**, industrial-grade, zero-backend **1D & 2D QR barcode workbench and batch die-cut sticker sheet printing studio** packaged entirely inside a single, self-contained [`index.html`](index.html) file.
 
-Every encoder—**Code 128 Auto (`128B`/`128C`)**, **Code 39**, **EAN-13**, **ITF (Interleaved 2 of 5)**, and **QR Code (ISO/IEC 18004 Model 2 with GF(256) Reed-Solomon ECC)**—is implemented in pure, dependency-free JavaScript and rendered to crisp vector `<svg>` graphics with physical millimeter (`mm`) `@page` print stylesheets.
+🔬 Every encoder—📊 **Code 128 Auto (`128B`/`128C`)**, 🏭 **Code 39**, 🛒 **EAN-13**, 📦 **ITF (Interleaved 2 of 5)**, and 📱 **QR Code (ISO/IEC 18004 Model 2 with GF(256) Reed-Solomon ECC)**—is implemented in pure, dependency-free JavaScript and rendered to crisp vector `<svg>` graphics with physical millimeter (`mm`) `@page` print stylesheets.
 
 ---
 
 ## 🌐 Access as a Running Web Page from Anywhere
 
-Because the entire application lives in a single static [`index.html`](index.html) with **zero external runtime dependencies**, you can run it immediately from any browser on desktop, tablet, or mobile:
+Because the entire application lives in a single static [`index.html`](index.html) with **zero external runtime dependencies**, you can run it immediately from any browser on 🖥️ desktop, 📱 tablet, or 📲 mobile:
 
-| Access Channel | Live URL / Command | Best For |
+| 🛰️ Access Channel | 🔗 Live URL / Command | 🎯 Best For |
 | :--- | :--- | :--- |
-| **1. Official GitHub Pages** | **[`https://rajwanyair.github.io/barcode-label-studio/`](https://rajwanyair.github.io/barcode-label-studio/)** | Primary production web app (HTTPS, fast global edge caching) |
-| **2. Raw GitHack CDN Mirror** | **[`https://raw.githack.com/RajwanYair/barcode-label-studio/main/index.html`](https://raw.githack.com/RajwanYair/barcode-label-studio/main/index.html)** | Instant fallback mirror served via Cloudflare CDN |
-| **3. HTMLPreview Mirror** | **[`https://htmlpreview.github.io/?https://github.com/RajwanYair/barcode-label-studio/blob/main/index.html`](https://htmlpreview.github.io/?https://github.com/RajwanYair/barcode-label-studio/blob/main/index.html)** | Direct preview of the latest `main` branch HTML |
-| **4. Air-Gapped / Offline File** | `curl -fsSL https://raw.githubusercontent.com/RajwanYair/barcode-label-studio/main/index.html -o barcode-label-studio.html` | Warehouse, lab, or factory floor machines with no internet |
+| **1. 🚀 Official GitHub Pages** | **[`https://rajwanyair.github.io/barcode-label-studio/`](https://rajwanyair.github.io/barcode-label-studio/)** | Primary production web app (HTTPS, fast global edge caching) |
+| **2. 🌐 Raw GitHack CDN Mirror** | **[`https://raw.githack.com/RajwanYair/barcode-label-studio/main/index.html`](https://raw.githack.com/RajwanYair/barcode-label-studio/main/index.html)** | Instant fallback mirror served via Cloudflare CDN |
+| **3. 🔍 HTMLPreview Mirror** | **[`https://htmlpreview.github.io/?https://github.com/RajwanYair/barcode-label-studio/blob/main/index.html`](https://htmlpreview.github.io/?https://github.com/RajwanYair/barcode-label-studio/blob/main/index.html)** | Direct preview of the latest `main` branch HTML |
+| **4. 💾 Air-Gapped / Offline File** | `curl -fsSL https://raw.githubusercontent.com/RajwanYair/barcode-label-studio/main/index.html -o barcode-label-studio.html` | Warehouse, lab, or factory floor machines with no internet |
 
 ---
 
 ## ✨ Why Barcode Label Studio?
 
-| Capability | **Barcode Label Studio** | Typical Web Generators | Desktop Label Suites |
+| 🧩 Capability | 🏆 **Barcode Label Studio** | 🌐 Typical Web Generators | 🖥️ Desktop Label Suites |
 | :--- | :---: | :---: | :---: |
-| **100% Client-Side Privacy (Zero Telemetry)** | ✅ Yes | ❌ Uploads serials to server | ✅ Yes |
-| **Single-File Offline Portability (`index.html`)** | ✅ 1 file (~80 KB) | ❌ Requires backend | ❌ 500 MB+ installer |
-| **Code 128 Auto (`128B` ↔ `128C` Digit Compaction)** | ✅ Dynamic lookahead | ⚠️ Usually 128B only | ✅ Yes |
-| **EAN-13 Check-Digit Validation & 1-Click Repair** | ✅ Built-in GS1 fixer | ❌ Rejects with generic error | ⚠️ Manual |
-| **QR Code ISO/IEC 18004 + Custom Logo Overlay** | ✅ Vector SVG + badge | 💰 Paid tier / watermarked | ✅ Yes |
-| **Physical Avery A4 & US Letter `@page` Grids** | ✅ Exact `mm` geometry | ❌ Single image download only | ✅ Yes |
-| **Batch CSV / TSV / Excel (`.xlsx`/`.xls`) Import** | ✅ Drag-and-drop parser | ❌ Manual 1-by-1 entry | ✅ Yes |
-| **Bilingual UI (English LTR & Hebrew `עברית` RTL)** | ✅ Instant 1-click toggle | ❌ English only | ⚠️ OS-locked |
-| **Dark / Light Mode + PC, Tablet & Mobile Layout** | ✅ Adaptive & optical-safe | ⚠️ Fixed desktop layout | ❌ Desktop only |
-| **Automated Unit Test Suite (`node:test`)** | ✅ 28 deterministic tests | ❌ None | ❌ Proprietary |
+| 🔒 **100% Client-Side Privacy (Zero Telemetry)** | ✅ Yes (100% Local) | ❌ Uploads serials to server | ✅ Yes |
+| 📦 **Single-File Offline Portability (`index.html`)** | ✅ 1 file (~100 KB) | ❌ Requires backend | ❌ 500 MB+ installer |
+| 📊 **Code 128 Auto (`128B` ↔ `128C` Digit Compaction)** | ✅ Dynamic lookahead | ⚠️ Usually 128B only | ✅ Yes |
+| 🛠️ **EAN-13 Check-Digit Validation & 1-Click Repair** | ✅ Built-in GS1 fixer | ❌ Rejects with generic error | ⚠️ Manual |
+| 🖼️ **QR Code ISO/IEC 18004 + Custom Logo Overlay** | ✅ Vector SVG + badge | ⚠️ Watermarked / restricted | ✅ Yes |
+| 📏 **Physical Avery A4 & US Letter `@page` Grids** | ✅ Exact `mm` geometry | ❌ Single image download only | ✅ Yes |
+| 📂 **Batch CSV / TSV / Excel (`.xlsx`/`.xls`) Import** | ✅ Drag-and-drop parser | ❌ Manual 1-by-1 entry | ✅ Yes |
+| 🌍 **Bilingual UI (English LTR & Hebrew `עברית` RTL)** | ✅ Instant 1-click toggle | ❌ English only | ⚠️ OS-locked |
+| 🌓 **Dark / Light Mode + PC, Tablet & Mobile Layout** | ✅ Adaptive & optical-safe | ⚠️ Fixed desktop layout | ❌ Desktop only |
+| 🧪 **Automated Meta-Guard Test Suite (`node:test`)** | ✅ 100% Function & Doc Gate | ❌ None | ❌ Closed-source |
 
 ---
 
@@ -121,13 +123,19 @@ flowchart LR
 
 ## 🔬 Symbology Specifications & Encoding Algorithms
 
-| Symbology | Standard | Character Set | Checksum / Error Correction | Smart Optimization & Diagnostics | Typical Applications |
+<div align="center">
+  <img src="assets/spec-overview.svg" alt="Symbology Encoding & Bit-Level Anatomy Specification" width="100%" />
+</div>
+
+> 📐 For the complete mathematical and architectural specification, see **[`SPEC.md`](SPEC.md)**.
+
+| 🏷️ Symbology | 📜 Standard | 🔤 Character Set | 🧮 Checksum / Error Correction | ⚡ Smart Optimization & Diagnostics | 🏭 Typical Applications |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Code 128 Auto** | ISO/IEC 15417 | Full ASCII (`0x20–0x7E`) | **Modulo 103** weighted symbol sum | Dynamic lookahead switches to **Code Set C** (2 digits/symbol) for $\ge 4$ consecutive even digits or entire even numeric strings; **Code Set B** for ASCII | Logistics, GS1-128 serials, asset tags, warehouse bins |
-| **Code 39** | ISO/IEC 16388 | `0–9`, `A–Z`, space, `- . $ / + %` | **Modulo 43** telemetry check character | Auto-normalizes lowercase input to uppercase; offers 1-click switch to Code 128 for unsupported ASCII symbols | Automotive, defense (LOGMARS), industrial badge IDs |
-| **EAN-13** | GS1 General Spec | 12 or 13 numeric digits (`0–9`) | **GS1 Modulo 10** ($3\times / 1\times$ alternating weights) | Automatically computes 13th digit from 12 digits; detects wrong 13th check digit and provides a **1-click Fix button** (`fixValue`) | Retail point-of-sale (POS), books (ISBN-13), consumer goods |
-| **ITF (2 of 5)** | ISO/IEC 16390 | Numeric digits (`0–9`) | Pairwise interleaved bar/space width parity | Automatically prepends a leading `0` when given an odd number of digits (`ITF (0-padded)`) | Corrugated cartons, master shipping cases, pallets |
-| **QR Code** | ISO/IEC 18004 | Full UTF-8 byte stream (up to 134 B) | **Reed-Solomon ECC Level L** over $\text{GF}(2^8)$ | Auto-selects **Version 1 ($21\times21$) to Version 6 ($41\times41$)**; evaluates all 8 masks using the 4 ISO penalty rules | URLs, mobile scan workflows, vCards, branded product stickers |
+| 📊 **Code 128 Auto** | ISO/IEC 15417 | Full ASCII (`0x20–0x7E`) | **Modulo 103** weighted symbol sum | Dynamic lookahead switches to **Code Set C** (2 digits/symbol) for $\ge 4$ consecutive even digits or entire even numeric strings; **Code Set B** for ASCII | Logistics, GS1-128 serials, asset tags, warehouse bins |
+| 🏭 **Code 39** | ISO/IEC 16388 | `0–9`, `A–Z`, space, `- . $ / + %` | **Modulo 43** telemetry check character | Auto-normalizes lowercase input to uppercase; offers 1-click switch to Code 128 for unsupported ASCII symbols | Automotive, defense (LOGMARS), industrial badge IDs |
+| 🛒 **EAN-13** | GS1 General Spec | 12 or 13 numeric digits (`0–9`) | **GS1 Modulo 10** ($3\times / 1\times$ alternating weights) | Automatically computes 13th digit from 12 digits; detects wrong 13th check digit and provides a **1-click Fix button** (`fixValue`) | Retail point-of-sale (POS), books (ISBN-13), consumer goods |
+| 📦 **ITF (2 of 5)** | ISO/IEC 16390 | Numeric digits (`0–9`) | Pairwise interleaved bar/space width parity | Automatically prepends a leading `0` when given an odd number of digits (`ITF (0-padded)`) | Corrugated cartons, master shipping cases, pallets |
+| 📱 **QR Code** | ISO/IEC 18004 | Full UTF-8 byte stream (up to 134 B) | **Reed-Solomon ECC Level M** over $\text{GF}(2^8)$ | Auto-selects **Version 1 ($21\times21$) to Version 6 ($41\times41$)**; alphanumeric & UTF-8 byte modes + center logo badge | URLs, mobile scan workflows, vCards, branded product stickers |
 
 ### Code 128 Auto (`128B` ↔ `128C`) Compaction State Machine
 
@@ -240,31 +248,54 @@ node --test tests/barcode.test.js
 
 ---
 
+## �️ Open-Source Sprint Roadmap (`ROADMAP.md`)
+
+<div align="center">
+  <img src="assets/roadmap-sprints.svg" alt="Barcode Label Studio 6-Sprint Engineering Roadmap" width="100%" />
+</div>
+
+> 📋 See **[`ROADMAP.md`](ROADMAP.md)** for the full sprint backlog, acceptance criteria, and task-level test gates.
+
+```mermaid
+flowchart LR
+    S1["✅ Sprint 1 (v1.0)<br/>Core 1D/QR + Avery Sheets<br/>EN/HE + Dark/Light + Tests"] --> S2["🏷️ Sprint 2 (v1.1)<br/>UPC-A • EAN-8 • Codabar<br/>DataMatrix • QR ECC L/M/Q/H"]
+    S1 --> S3["📐 Sprint 3 (v1.2)<br/>Custom Sheet Builder<br/>Skip Used Stickers • CSV Fields"]
+    S2 --> S4["📷 Sprint 4 (v1.3)<br/>Camera Scan Verifier<br/>Quiet-Zone & Contrast Grader"]
+    S3 --> S5["💾 Sprint 5 (v1.4)<br/>PWA Offline Worker<br/>IndexedDB Template Library"]
+    S4 & S5 --> S6["🖨️ Sprint 6 (v2.0)<br/>ZPL II / ESC-POS Export<br/>WebUSB Thermal Printing"]
+```
+
+---
+
 ## 📁 Project Structure
 
 ```text
 barcode-label-studio/
-├── index.html                           # Self-contained application (HTML5 + CSS3 + ES6 Barcode/QR/Print Engine)
+├── index.html                           # 🏷️ Self-contained application (HTML5 + CSS3 + ES6 Barcode/QR/Print Engine)
+├── SPEC.md                              # 📐 Technical & functional specification with Mermaid & KaTeX math
+├── ROADMAP.md                           # 🗺️ Multi-sprint engineering roadmap & task backlog
 ├── assets/
-│   ├── hero-banner.svg                  # Vector hero banner for documentation & social preview
-│   ├── architecture-flow.svg            # 4-stage client-side architecture diagram
-│   └── sticker-presets.svg              # Visual guide to Avery A4 & US Letter die-cut sheet layouts
+│   ├── hero-banner.svg                  # 🎨 Vector hero banner for documentation & social preview
+│   ├── architecture-flow.svg            # 🏗️ 4-stage client-side architecture diagram
+│   ├── spec-overview.svg                # 🔬 Bit-level anatomy comparison of all 5 symbologies
+│   ├── sticker-presets.svg              # 🖨️ Visual guide to Avery A4 & US Letter die-cut sheet layouts
+│   └── roadmap-sprints.svg              # 🚀 6-sprint development roadmap timeline
 ├── tests/
-│   └── barcode.test.js                  # 24 automated unit tests (node:test + node:vm)
+│   └── barcode.test.js                  # 🧪 Automated meta-guard & unit tests (node:test + node:vm)
 ├── .github/
 │   ├── workflows/
-│   │   └── ci.yml                       # GitHub Actions CI & GitHub Pages deployment workflow
+│   │   └── ci.yml                       # ⚙️ GitHub Actions CI matrix (Node 20 & 22)
 │   ├── ISSUE_TEMPLATE/
-│   │   ├── bug_report.md                # Structured bug report template
-│   │   └── feature_request.md           # Symbology / preset feature request template
-│   └── PULL_REQUEST_TEMPLATE.md         # PR checklist for encoders and @media print testing
-├── package.json                         # Package metadata & npm test script
-├── README.md                            # Comprehensive documentation, Mermaid flows & reference tables
-├── CHANGELOG.md                         # Keep-a-Changelog release history
-├── CONTRIBUTING.md                      # Contributor guide & engineering principles
-├── CODE_OF_CONDUCT.md                   # Contributor Covenant Code of Conduct
-├── SECURITY.md                          # Security policy & vulnerability reporting
-└── LICENSE                              # MIT License
+│   │   ├── bug_report.md                # 🐛 Structured bug report template
+│   │   └── feature_request.md           # ✨ Symbology / preset feature request template
+│   └── PULL_REQUEST_TEMPLATE.md         # 📋 PR checklist for encoders and @media print testing
+├── package.json                         # 📦 Package metadata & npm test script
+├── README.md                            # 📖 Comprehensive documentation, Mermaid flows & reference tables
+├── CHANGELOG.md                         # 🕒 Keep-a-Changelog release history
+├── CONTRIBUTING.md                      # 🤝 Contributor guide & engineering principles
+├── CODE_OF_CONDUCT.md                   # 🛡️ Contributor Covenant Code of Conduct
+├── SECURITY.md                          # 🔒 Security policy & vulnerability reporting
+└── LICENSE                              # ⚖️ MIT License
 ```
 
 ---

@@ -258,6 +258,8 @@ describe("Repository Configs, Workflows, Documentation & SVG Assets Integrity", 
       "index.html",
       "package.json",
       "README.md",
+      "SPEC.md",
+      "ROADMAP.md",
       "LICENSE",
       "CONTRIBUTING.md",
       "CODE_OF_CONDUCT.md",
@@ -271,7 +273,9 @@ describe("Repository Configs, Workflows, Documentation & SVG Assets Integrity", 
       ".github/PULL_REQUEST_TEMPLATE.md",
       "assets/hero-banner.svg",
       "assets/architecture-flow.svg",
+      "assets/spec-overview.svg",
       "assets/sticker-presets.svg",
+      "assets/roadmap-sprints.svg",
       "tests/barcode.test.js"
     ];
 
@@ -305,11 +309,13 @@ describe("Repository Configs, Workflows, Documentation & SVG Assets Integrity", 
     assert.match(ciYaml, /npm test/);
   });
 
-  test("All SVG assets in assets/ are well-formed vector diagrams with accessibility titles", () => {
+  test("All 5 SVG assets in assets/ are well-formed vector diagrams with accessibility titles", () => {
     const svgFiles = [
       "assets/hero-banner.svg",
       "assets/architecture-flow.svg",
-      "assets/sticker-presets.svg"
+      "assets/spec-overview.svg",
+      "assets/sticker-presets.svg",
+      "assets/roadmap-sprints.svg"
     ];
     for (const relPath of svgFiles) {
       const content = fs.readFileSync(path.join(ROOT_DIR, relPath), "utf8").trim();
@@ -321,28 +327,59 @@ describe("Repository Configs, Workflows, Documentation & SVG Assets Integrity", 
     }
   });
 
-  test("README.md and CONTRIBUTING.md local file links and Mermaid diagrams are valid", () => {
+  test("README.md, SPEC.md, ROADMAP.md, and CONTRIBUTING.md local file links, Mermaid diagrams, and Sprint tasks are valid", () => {
     const readme = fs.readFileSync(path.join(ROOT_DIR, "README.md"), "utf8");
+    const spec = fs.readFileSync(path.join(ROOT_DIR, "SPEC.md"), "utf8");
+    const roadmap = fs.readFileSync(path.join(ROOT_DIR, "ROADMAP.md"), "utf8");
     const contributing = fs.readFileSync(path.join(ROOT_DIR, "CONTRIBUTING.md"), "utf8");
 
-    // Verify Mermaid diagrams in README.md
-    const mermaidBlocks = [...readme.matchAll(/```mermaid\n([\s\S]*?)```/g)].map(m => m[1]);
-    assert.ok(mermaidBlocks.length >= 3, `Expected at least 3 Mermaid diagrams in README.md, found ${mermaidBlocks.length}`);
-    assert.ok(mermaidBlocks.some(b => b.includes("flowchart LR")), "Expected flowchart LR in README.md");
-    assert.ok(mermaidBlocks.some(b => b.includes("stateDiagram-v2")), "Expected stateDiagram-v2 in README.md");
-    assert.ok(mermaidBlocks.some(b => b.includes("flowchart TD")), "Expected flowchart TD in README.md");
+    // Verify Mermaid diagrams in README.md, SPEC.md, and ROADMAP.md
+    const readmeMermaid = [...readme.matchAll(/```mermaid\n([\s\S]*?)```/g)].map(m => m[1]);
+    assert.ok(readmeMermaid.length >= 4, `Expected at least 4 Mermaid diagrams in README.md, found ${readmeMermaid.length}`);
+
+    const specMermaid = [...spec.matchAll(/```mermaid\n([\s\S]*?)```/g)].map(m => m[1]);
+    assert.ok(specMermaid.length >= 2, `Expected at least 2 Mermaid diagrams in SPEC.md, found ${specMermaid.length}`);
+    assert.ok(specMermaid.some(b => b.includes("sequenceDiagram")), "Expected sequenceDiagram in SPEC.md");
+
+    const roadmapMermaid = [...roadmap.matchAll(/```mermaid\n([\s\S]*?)```/g)].map(m => m[1]);
+    assert.ok(roadmapMermaid.length >= 2, `Expected at least 2 Mermaid diagrams in ROADMAP.md, found ${roadmapMermaid.length}`);
+    assert.ok(roadmapMermaid.some(b => b.includes("gantt")), "Expected gantt sprint chart in ROADMAP.md");
+
+    // Verify all 6 Sprints and task IDs exist in ROADMAP.md
+    for (let s = 1; s <= 6; s++) {
+      assert.match(roadmap, new RegExp(`Sprint ${s}`), `Expected Sprint ${s} in ROADMAP.md`);
+      assert.match(roadmap, new RegExp(`S${s}-T1`), `Expected task S${s}-T1 in ROADMAP.md`);
+    }
 
     // Verify all local markdown links [label](target) and img src="target" exist on disk
+    const docsContent = [readme, spec, roadmap, contributing].join("\n");
     const mdLinks = [
-      ...[...readme.matchAll(/\]\(([^)#\s]+)\)/g)].map(m => m[1]),
-      ...[...readme.matchAll(/src=["']([^"']+)["']/g)].map(m => m[1]),
-      ...[...contributing.matchAll(/\]\(([^)#\s]+)\)/g)].map(m => m[1])
+      ...[...docsContent.matchAll(/\]\(([^)#\s]+)\)/g)].map(m => m[1]),
+      ...[...docsContent.matchAll(/src=["']([^"']+)["']/g)].map(m => m[1])
     ].filter(href => !href.startsWith("http://") && !href.startsWith("https://") && !href.startsWith("mailto:"));
 
-    assert.ok(mdLinks.length >= 8, "Expected local file links in documentation");
+    assert.ok(mdLinks.length >= 14, "Expected local file links across documentation");
     for (const relTarget of mdLinks) {
       const targetPath = path.join(ROOT_DIR, relTarget);
       assert.ok(fs.existsSync(targetPath), `Broken local documentation link to "${relTarget}"`);
+    }
+  });
+
+  test("Open-Source Non-Commercial Gate: Spec and docs contain zero pricing, payment, or commercial quote language", () => {
+    const docFiles = ["README.md", "SPEC.md", "ROADMAP.md", "CONTRIBUTING.md", "CHANGELOG.md", "index.html"];
+    const forbiddenPatterns = [
+      /הצעת מחיר/,
+      /\bדיון\b/,
+      /paid tier/i,
+      /request to pay/i,
+      /pricing plan/i,
+      /subscription fee/i
+    ];
+    for (const file of docFiles) {
+      const content = fs.readFileSync(path.join(ROOT_DIR, file), "utf8");
+      for (const pat of forbiddenPatterns) {
+        assert.doesNotMatch(content, pat, `Forbidden commercial/quote pattern ${pat} found in ${file}`);
+      }
     }
   });
 
