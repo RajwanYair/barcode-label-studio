@@ -6,11 +6,13 @@ const vm = require("node:vm");
 
 const ROOT_DIR = path.resolve(__dirname, "..");
 const INDEX_HTML_PATH = path.join(ROOT_DIR, "index.html");
+const TEST_FILE_PATH = __filename;
 const htmlContent = fs.readFileSync(INDEX_HTML_PATH, "utf8");
+const testFileContent = fs.readFileSync(TEST_FILE_PATH, "utf8");
 
 /**
  * Extract the inline application <script> from index.html and evaluate it
- * inside a minimal sandboxed DOM context so tests run against the real code.
+ * inside a sandboxed DOM context so tests run against the real production code.
  */
 function loadBarcodeApi() {
   const scriptMatches = [...htmlContent.matchAll(/<script>([\s\S]*?)<\/script>/g)];
@@ -19,26 +21,42 @@ function loadBarcodeApi() {
 
   const makeMockElement = (id = "") => {
     const attrs = new Map();
+    const children = [];
+    const listeners = new Map();
     return {
       id,
-      value: id === "barcodeInput" ? "4820019472" : (id === "symbologySelect" || id === "batchSymbology" ? "CODE128" : "2"),
+      value: id === "barcodeInput" ? "4820019472" : (id === "symbologySelect" || id === "batchSymbology" ? "CODE128" : (id === "stickerFormat" ? "a4-3x8" : "2")),
       checked: true,
       disabled: false,
       textContent: "",
       placeholder: "",
       innerHTML: "",
+      clientWidth: 220,
+      clientHeight: 110,
+      children,
       style: {},
       dataset: { tab: "single-tab", val: "4820019472", sym: "CODE128" },
       classList: {
-        add() {},
-        remove() {},
-        contains() { return false; }
+        _set: new Set(),
+        add(c) { this._set.add(c); },
+        remove(c) { this._set.delete(c); },
+        contains(c) { return this._set.has(c); }
       },
       setAttribute(k, v) { attrs.set(k, String(v)); },
       getAttribute(k) { return attrs.has(k) ? attrs.get(k) : "200"; },
-      addEventListener() {},
-      appendChild() {},
+      addEventListener(ev, fn) { listeners.set(ev, fn); },
+      appendChild(child) { children.push(child); return child; },
       querySelectorAll() { return []; },
+      getContext() {
+        return {
+          scaleCalls: [],
+          drawCalls: 0,
+          scale(x, y) { this.scaleCalls.push([x, y]); },
+          drawImage() { this.drawCalls++; }
+        };
+      },
+      toDataURL() { return "data:image/png;base64,MOCKPNG"; },
+      toBlob(cb) { cb(new Uint8Array([137, 80, 78, 71])); },
       focus() {},
       click() {}
     };
@@ -46,9 +64,42 @@ function loadBarcodeApi() {
 
   const elementsById = new Map();
   const docElement = makeMockElement("html");
+  const storageMap = new Map();
+
+  class MockImage {
+    set src(url) {
+      this._src = url;
+      if (typeof this.onload === "function") this.onload();
+    }
+    get src() { return this._src; }
+  }
+
+  class MockFileReader {
+    readAsText(file) {
+      if (typeof this.onload === "function") {
+        this.onload({ target: { result: file._content || "" } });
+      }
+    }
+    readAsDataURL(file) {
+      if (typeof this.onload === "function") {
+        this.onload({ target: { result: file._content || "data:image/png;base64,MOCK" } });
+      }
+    }
+    readAsArrayBuffer(file) {
+      if (typeof this.onload === "function") {
+        this.onload({ target: { result: file._buffer || new ArrayBuffer(8) } });
+      }
+    }
+  }
+
   const sandbox = {
     globalThis: null,
+    localStorage: {
+      getItem(k) { return storageMap.has(k) ? storageMap.get(k) : null; },
+      setItem(k, v) { storageMap.set(k, String(v)); }
+    },
     window: {
+      matchMedia() { return { matches: false }; },
       print() {},
       open() {
         return { document: { write() {}, close() {} }, print() {} };
@@ -70,17 +121,36 @@ function loadBarcodeApi() {
       }
     },
     XMLSerializer: class {
-      serializeToString() { return "<svg></svg>"; }
+      serializeToString() { return "<svg width=\"200\" height=\"100\"></svg>"; }
     },
-    Blob: class {},
+    Blob: class {
+      constructor(parts, opts) { this.parts = parts; this.opts = opts; }
+    },
     URL: {
       createObjectURL() { return "blob:mock"; },
       revokeObjectURL() {}
     },
-    Image: class {},
-    FileReader: class {},
+    Image: MockImage,
+    FileReader: MockFileReader,
+    XLSX: {
+      read() {
+        return {
+          SheetNames: ["Sheet1"],
+          Sheets: { Sheet1: {} }
+        };
+      },
+      utils: {
+        sheet_to_json() {
+          return [["XLSX-1001"], ["XLSX-1002"], [""]];
+        }
+      }
+    },
     navigator: { clipboard: { write: async () => {} } },
-    setTimeout,
+    setTimeout(fn, ms) {
+      const t = setTimeout(fn, ms);
+      if (t && typeof t.unref === "function") t.unref();
+      return t;
+    },
     clearTimeout
   };
   sandbox.globalThis = sandbox;
@@ -89,40 +159,73 @@ function loadBarcodeApi() {
   vm.runInContext(appScript, sandbox, { filename: "index.html" });
 
   assert.ok(sandbox.__BARCODE_API__, "Expected __BARCODE_API__ to be exposed on globalThis");
-  return { api: sandbox.__BARCODE_API__, requestedIds: [...elementsById.keys()], docElement };
+  return {
+    api: sandbox.__BARCODE_API__,
+    requestedIds: [...elementsById.keys()],
+    elementsById,
+    docElement,
+    storageMap,
+    appScript
+  };
 }
 
-const { api, requestedIds, docElement } = loadBarcodeApi();
+const { api, requestedIds, elementsById, docElement, storageMap, appScript } = loadBarcodeApi();
 
-describe("Repository & HTML Structure Integrity", () => {
-  test("Required standard GitHub documentation files exist and are non-empty", () => {
-    const requiredFiles = [
-      "index.html",
-      "README.md",
-      "LICENSE",
-      "CONTRIBUTING.md",
-      "CODE_OF_CONDUCT.md",
-      "SECURITY.md",
-      "CHANGELOG.md",
-      ".gitignore",
-      ".github/ISSUE_TEMPLATE/bug_report.md",
-      ".github/ISSUE_TEMPLATE/feature_request.md",
-      ".github/PULL_REQUEST_TEMPLATE.md",
-      "assets/hero-banner.svg",
-      "assets/architecture-flow.svg",
-      "assets/sticker-presets.svg"
-    ];
+// ============================================================================
+// 1. META-GUARD: 100% FUNCTION, CONSTANT & DOM COVERAGE GATE
+// ============================================================================
+describe("Meta-Guard: 100% Function & Export Coverage Gate", () => {
+  test("Every top-level function in index.html is exported on __BARCODE_API__ and tested in barcode.test.js", () => {
+    const topLevelFnRegex = /^ {4}function\s+([a-zA-Z0-9_]+)\s*\(/gm;
+    const declaredFunctions = [...appScript.matchAll(topLevelFnRegex)].map(m => m[1]);
+    assert.ok(declaredFunctions.length >= 32, `Expected at least 32 top-level functions, found ${declaredFunctions.length}`);
 
-    for (const relPath of requiredFiles) {
-      const fullPath = path.join(ROOT_DIR, relPath);
-      assert.ok(fs.existsSync(fullPath), `Missing required file: ${relPath}`);
-      const stat = fs.statSync(fullPath);
-      assert.ok(stat.size > 20, `File ${relPath} is unexpectedly empty (${stat.size} bytes)`);
+    for (const fnName of declaredFunctions) {
+      assert.equal(
+        typeof api[fnName],
+        "function",
+        `Function "${fnName}" is declared in index.html but missing from globalThis.__BARCODE_API__ — export and test it!`
+      );
+      const callPattern = new RegExp(`api\\.${fnName}\\b`);
+      assert.match(
+        testFileContent,
+        callPattern,
+        `Function "${fnName}" is not directly tested via api.${fnName} in tests/barcode.test.js!`
+      );
     }
+  });
 
-    const readme = fs.readFileSync(path.join(ROOT_DIR, "README.md"), "utf8");
-    assert.match(readme, /```mermaid/, "Expected Mermaid diagrams in README.md");
-    assert.match(readme, /https:\/\/rajwanyair\.github\.io\/barcode-label-studio\//, "Expected live GitHub Pages URL in README.md");
+  test("All lookup tables and constants are exported and non-empty", () => {
+    const requiredConstants = [
+      "CODE128_PATTERNS",
+      "CODE39_MAP",
+      "CODE39_CHARS",
+      "EAN_L",
+      "EAN_G",
+      "EAN_R",
+      "EAN_PARITY",
+      "ITF_WEIGHTS",
+      "GF256_EXP",
+      "GF256_LOG",
+      "QR_VERSION_INFO",
+      "QR_ALIGNMENT_POS",
+      "QR_ECI_ALNUM",
+      "STICKER_LAYOUTS",
+      "I18N"
+    ];
+    for (const name of requiredConstants) {
+      assert.ok(api[name] !== undefined && api[name] !== null, `Missing exported constant: ${name}`);
+    }
+    assert.equal(api.CODE39_CHARS.length, 43);
+    assert.equal(Object.keys(api.CODE39_MAP).length, 44); // 43 chars + '*'
+    assert.equal(api.EAN_L.length, 10);
+    assert.equal(api.EAN_G.length, 10);
+    assert.equal(api.EAN_R.length, 10);
+    assert.equal(api.EAN_PARITY.length, 10);
+    assert.equal(api.ITF_WEIGHTS.length, 10);
+    assert.equal(api.GF256_EXP.length, 512);
+    assert.equal(api.GF256_LOG.length, 256);
+    assert.equal(Object.keys(api.QR_ALIGNMENT_POS).length, 6);
   });
 
   test("All DOM element IDs queried during initialization exist in index.html", () => {
@@ -132,8 +235,129 @@ describe("Repository & HTML Structure Integrity", () => {
       assert.match(htmlContent, idPattern, `DOM element id="${id}" is referenced in JS but missing in HTML`);
     }
   });
+
+  test("Every data-i18n and data-i18n-placeholder attribute in index.html exists in both I18N.en and I18N.he", () => {
+    const i18nKeys = [
+      ...[...htmlContent.matchAll(/data-i18n=["']([^"']+)["']/g)].map(m => m[1]),
+      ...[...htmlContent.matchAll(/data-i18n-placeholder=["']([^"']+)["']/g)].map(m => m[1])
+    ];
+    assert.ok(i18nKeys.length >= 45, `Expected at least 45 data-i18n attributes in index.html, found ${i18nKeys.length}`);
+    for (const key of i18nKeys) {
+      assert.ok(api.I18N.en[key], `Missing English translation for data-i18n="${key}"`);
+      assert.ok(api.I18N.he[key], `Missing Hebrew translation for data-i18n="${key}"`);
+    }
+  });
 });
 
+// ============================================================================
+// 2. CONFIGURATION, CI WORKFLOW, TEMPLATES, DOCS & SVG ASSETS SUITE
+// ============================================================================
+describe("Repository Configs, Workflows, Documentation & SVG Assets Integrity", () => {
+  test("All required repository files exist and are non-empty", () => {
+    const requiredFiles = [
+      "index.html",
+      "package.json",
+      "README.md",
+      "LICENSE",
+      "CONTRIBUTING.md",
+      "CODE_OF_CONDUCT.md",
+      "SECURITY.md",
+      "CHANGELOG.md",
+      ".gitignore",
+      ".nojekyll",
+      ".github/workflows/ci.yml",
+      ".github/ISSUE_TEMPLATE/bug_report.md",
+      ".github/ISSUE_TEMPLATE/feature_request.md",
+      ".github/PULL_REQUEST_TEMPLATE.md",
+      "assets/hero-banner.svg",
+      "assets/architecture-flow.svg",
+      "assets/sticker-presets.svg",
+      "tests/barcode.test.js"
+    ];
+
+    for (const relPath of requiredFiles) {
+      const fullPath = path.join(ROOT_DIR, relPath);
+      assert.ok(fs.existsSync(fullPath), `Missing required file: ${relPath}`);
+      if (relPath !== ".nojekyll") {
+        const stat = fs.statSync(fullPath);
+        assert.ok(stat.size > 20, `File ${relPath} is unexpectedly empty (${stat.size} bytes)`);
+      }
+    }
+  });
+
+  test("package.json has valid metadata, repository URLs, and test script", () => {
+    const pkg = JSON.parse(fs.readFileSync(path.join(ROOT_DIR, "package.json"), "utf8"));
+    assert.equal(pkg.name, "barcode-label-studio");
+    assert.match(pkg.version, /^\d+\.\d+\.\d+$/);
+    assert.equal(pkg.main, "index.html");
+    assert.equal(pkg.license, "MIT");
+    assert.ok(pkg.repository && pkg.repository.url.includes("RajwanYair/barcode-label-studio"));
+    assert.ok(pkg.homepage && pkg.homepage.includes("rajwanyair.github.io/barcode-label-studio"));
+    assert.ok(pkg.bugs && pkg.bugs.url.includes("RajwanYair/barcode-label-studio/issues"));
+    assert.ok(pkg.scripts && pkg.scripts.test.includes("node --test"));
+  });
+
+  test(".github/workflows/ci.yml runs npm test on push and pull_request to main", () => {
+    const ciYaml = fs.readFileSync(path.join(ROOT_DIR, ".github/workflows/ci.yml"), "utf8");
+    assert.match(ciYaml, /push:/);
+    assert.match(ciYaml, /pull_request:/);
+    assert.match(ciYaml, /branches:\s*\[main\]/);
+    assert.match(ciYaml, /npm test/);
+  });
+
+  test("All SVG assets in assets/ are well-formed vector diagrams with accessibility titles", () => {
+    const svgFiles = [
+      "assets/hero-banner.svg",
+      "assets/architecture-flow.svg",
+      "assets/sticker-presets.svg"
+    ];
+    for (const relPath of svgFiles) {
+      const content = fs.readFileSync(path.join(ROOT_DIR, relPath), "utf8").trim();
+      assert.match(content, /^<svg\s+xmlns="http:\/\/www\.w3\.org\/2000\/svg"/, `${relPath} must start with <svg xmlns="...">`);
+      assert.match(content, /viewBox="0 0 \d+ \d+"/, `${relPath} must define viewBox`);
+      assert.match(content, /<title[\s>]/, `${relPath} must include <title> for accessibility`);
+      assert.match(content, /<desc[\s>]/, `${relPath} must include <desc> for accessibility`);
+      assert.ok(content.endsWith("</svg>"), `${relPath} must end with </svg>`);
+    }
+  });
+
+  test("README.md and CONTRIBUTING.md local file links and Mermaid diagrams are valid", () => {
+    const readme = fs.readFileSync(path.join(ROOT_DIR, "README.md"), "utf8");
+    const contributing = fs.readFileSync(path.join(ROOT_DIR, "CONTRIBUTING.md"), "utf8");
+
+    // Verify Mermaid diagrams in README.md
+    const mermaidBlocks = [...readme.matchAll(/```mermaid\n([\s\S]*?)```/g)].map(m => m[1]);
+    assert.ok(mermaidBlocks.length >= 3, `Expected at least 3 Mermaid diagrams in README.md, found ${mermaidBlocks.length}`);
+    assert.ok(mermaidBlocks.some(b => b.includes("flowchart LR")), "Expected flowchart LR in README.md");
+    assert.ok(mermaidBlocks.some(b => b.includes("stateDiagram-v2")), "Expected stateDiagram-v2 in README.md");
+    assert.ok(mermaidBlocks.some(b => b.includes("flowchart TD")), "Expected flowchart TD in README.md");
+
+    // Verify all local markdown links [label](target) and img src="target" exist on disk
+    const mdLinks = [
+      ...[...readme.matchAll(/\]\(([^)#\s]+)\)/g)].map(m => m[1]),
+      ...[...readme.matchAll(/src=["']([^"']+)["']/g)].map(m => m[1]),
+      ...[...contributing.matchAll(/\]\(([^)#\s]+)\)/g)].map(m => m[1])
+    ].filter(href => !href.startsWith("http://") && !href.startsWith("https://") && !href.startsWith("mailto:"));
+
+    assert.ok(mdLinks.length >= 8, "Expected local file links in documentation");
+    for (const relTarget of mdLinks) {
+      const targetPath = path.join(ROOT_DIR, relTarget);
+      assert.ok(fs.existsSync(targetPath), `Broken local documentation link to "${relTarget}"`);
+    }
+  });
+
+  test("index.html includes SEO, OpenGraph, Twitter Card, favicon, and responsive CSS", () => {
+    assert.match(htmlContent, /<link rel="canonical" href="https:\/\/rajwanyair\.github\.io\/barcode-label-studio\/"/);
+    assert.match(htmlContent, /<meta property="og:title"/);
+    assert.match(htmlContent, /<meta property="og:image"/);
+    assert.match(htmlContent, /<meta name="twitter:card" content="summary_large_image"/);
+    assert.match(htmlContent, /<link rel="icon" type="image\/svg\+xml"/);
+  });
+});
+
+// ============================================================================
+// 3. 1D BARCODE ENCODERS & DISPATCHER SUITE
+// ============================================================================
 describe("Code 128 Encoder (128B ASCII & 128C Numeric Compaction)", () => {
   test("Code 128 pattern table has 107 valid entries", () => {
     assert.equal(api.CODE128_PATTERNS.length, 107);
@@ -148,7 +372,6 @@ describe("Code 128 Encoder (128B ASCII & 128C Numeric Compaction)", () => {
     assert.equal(res.error, undefined);
     assert.equal(res.modeLabel, "Code 128C (Numeric)");
     assert.equal(res.checksumLabel, "Mod 103: 5");
-    // StartC (11) + 5 pairs * 11 (55) + Checksum (11) + Stop (13) = 90 modules
     assert.equal(res.bits.length, 90);
     assert.match(res.bits, /^[01]+$/);
   });
@@ -158,7 +381,6 @@ describe("Code 128 Encoder (128B ASCII & 128C Numeric Compaction)", () => {
     assert.equal(res.error, undefined);
     assert.equal(res.modeLabel, "Code 128B (ASCII)");
     assert.equal(res.displayText, "ABC-12");
-    // StartB (11) + 6 chars * 11 (66) + Checksum (11) + Stop (13) = 101 modules
     assert.equal(res.bits.length, 101);
   });
 
@@ -186,7 +408,8 @@ describe("Code 39 Encoder", () => {
     assert.match(res.bits, /^1001011011010.*0100101101101$/);
   });
 
-  test("Flags unsupported symbols and offers Code 128 fallback", () => {
+  test("Flags unsupported symbols and Empty input, offering Code 128 fallback", () => {
+    assert.ok(api.encodeCode39("").error);
     const res = api.encodeCode39("ITEM#1");
     assert.ok(res.error);
     assert.equal(res.canSwitchTo128, true);
@@ -199,7 +422,6 @@ describe("EAN-13 Encoder & GS1 Check Digit", () => {
     const res = api.encodeEan13("978020137962");
     assert.equal(res.error, undefined);
     assert.equal(res.checksumLabel, "Check Digit: 4");
-    // Standard EAN-13 is always 95 modules (3 + 42 + 5 + 42 + 3)
     assert.equal(res.bits.length, 95);
   });
 
@@ -220,7 +442,7 @@ describe("EAN-13 Encoder & GS1 Check Digit", () => {
   });
 });
 
-describe("ITF (Interleaved 2 of 5) Encoder", () => {
+describe("ITF (Interleaved 2 of 5) Encoder & encodeCurrent Dispatcher", () => {
   test("Encodes even-length digits and auto-pads odd-length digits with leading zero", () => {
     const evenRes = api.encodeItf("4820019472");
     assert.equal(evenRes.error, undefined);
@@ -237,139 +459,234 @@ describe("ITF (Interleaved 2 of 5) Encoder", () => {
     assert.ok(res.error);
     assert.equal(res.canSwitchTo128, true);
   });
-});
 
-describe("SVG Rendering, Range Parsing & Sticker Sheet Presets", () => {
-  test("buildBarcodeSvgHtml produces valid SVG and escapes XML special characters", () => {
-    const built = api.buildBarcodeSvgHtml("A&B<C>", "CODE128", 2, 80, 12, 14, true);
-    assert.equal(built.error, undefined);
-    assert.match(built.svgHtml, /^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
-    assert.match(built.svgHtml, /A&amp;B&lt;C&gt;/);
-    assert.ok(!built.svgHtml.includes("A&B<C>"), "Raw unescaped XML characters must not appear in SVG text");
-  });
-
-  test("parseNumericSuffix extracts prefix, numeric value, and zero-padding width", () => {
-    assert.deepEqual({ ...api.parseNumericSuffix("SN-00105") }, {
-      prefix: "SN-",
-      num: 105,
-      digits: 5
-    });
-    assert.deepEqual({ ...api.parseNumericSuffix("4820019472") }, {
-      prefix: "",
-      num: 4820019472,
-      digits: 10
-    });
-    assert.equal(api.parseNumericSuffix("NO-TRAILING-DIGITS"), null);
-  });
-
-  test("STICKER_LAYOUTS defines all standard A4 and US Letter presets", () => {
-    const expectedKeys = ["a4-3x8", "a4-2x7", "a4-4x10", "letter-3x10", "letter-2x7", "flow"];
-    for (const key of expectedKeys) {
-      const layout = api.STICKER_LAYOUTS[key];
-      assert.ok(layout, `Missing sticker layout preset: ${key}`);
-      assert.ok(layout.cols >= 1, `Invalid cols for ${key}`);
-      assert.ok(layout.rows >= 1, `Invalid rows for ${key}`);
-      assert.match(layout.pageW, /^\d+(\.\d+)?mm$/);
-      assert.match(layout.pageH, /^\d+(\.\d+)?mm$/);
-    }
+  test("encodeCurrent routes correctly across all 5 symbologies", () => {
+    assert.equal(api.encodeCurrent("4820019472", "CODE128").modeLabel, "Code 128C (Numeric)");
+    assert.equal(api.encodeCurrent("SN-10", "CODE39").modeLabel, "Code 39");
+    assert.equal(api.encodeCurrent("978020137962", "EAN13").modeLabel, "EAN-13");
+    assert.equal(api.encodeCurrent("1234", "ITF").modeLabel, "ITF-14 / 2of5");
+    assert.match(api.encodeCurrent("HTTPS://EXAMPLE.COM", "QR").modeLabel, /^QR v\d/);
+    assert.equal(api.encodeCurrent("4820019472", "UNKNOWN_DEFAULT").modeLabel, "Code 128C (Numeric)");
   });
 });
 
-describe("QR Code Encoder (ISO/IEC 18004 Model 2, Versions 1–6)", () => {
-  test("EncodeQR produces valid v1 QR for short numeric input", () => {
-    const res = api.encodeQR("12345");
-    assert.equal(res.error, undefined);
-    assert.equal(res.modeLabel, "QR v1 (21×21)");
-    assert.equal(res.qrSize, 21);
-    assert.equal(res.qrModules.length, 21);
-    assert.equal(res.qrModules[0].length, 21);
+// ============================================================================
+// 4. QR CODE (ISO/IEC 18004) & GALOIS FIELD / REED-SOLOMON HELPERS SUITE
+// ============================================================================
+describe("QR Code Encoder & GF(256) Reed-Solomon Helpers", () => {
+  test("gfMul, rsGeneratePoly, and rsEncode perform valid GF(256) polynomial arithmetic", () => {
+    assert.equal(api.gfMul(0, 123), 0);
+    assert.equal(api.gfMul(215, 0), 0);
+    assert.equal(api.gfMul(1, 173), 173);
+    assert.equal(api.gfMul(17, 29), api.gfMul(29, 17)); // Commutativity
+
+    const poly7 = api.rsGeneratePoly(7);
+    assert.equal(poly7.length, 8);
+    assert.equal(poly7[poly7.length - 1], 1);
+
+    const data = new Uint8Array([0x20, 0x5b, 0x0b, 0x78]);
+    const encoded = api.rsEncode(data, 7);
+    assert.equal(encoded.length, data.length + 7);
+    assert.deepEqual([...encoded.slice(0, 4)], [...data]);
+    assert.ok(encoded.slice(4).some(b => b !== 0), "Expected non-zero Reed-Solomon parity bytes");
   });
 
-  test("EncodeQR produces valid v2 QR for slightly larger input", () => {
-    const res = api.encodeQR("HELLO WORLD 1234");
-    assert.equal(res.error, undefined);
-    assert.match(res.modeLabel, /^QR v\d \(\d+×\d+\)/);
-    assert.ok(res.qrSize >= 21);
+  test("qrGetVersionBitLen, qrEncodeAlpha, qrEncodeByte, qrTerminateAndPad, qrInterleave, and qrPlaceModules work accurately", () => {
+    assert.equal(api.qrGetVersionBitLen(10, 1), 1);
+    assert.equal(api.qrGetVersionBitLen(999, 1), null);
+
+    const alphaBits = api.qrEncodeAlpha("AB1");
+    assert.equal(alphaBits.length, 11 + 6);
+    assert.equal(api.qrEncodeAlpha("A~B"), null);
+
+    const byteBits = api.qrEncodeByte("Hi");
+    assert.equal(byteBits.length, 16);
+
+    const padded = api.qrTerminateAndPad("01000000", 4);
+    assert.equal(padded.length, 32);
+    assert.ok(padded.includes("11101100"), "Expected 0xEC pad codeword");
+
+    const v1Info = api.QR_VERSION_INFO[1];
+    const interleaved = api.qrInterleave(new Uint8Array(16).fill(0x41), v1Info, 1);
+    assert.equal(interleaved.length, v1Info.total);
+
+    const placed = api.qrPlaceModules(1, interleaved, 1);
+    assert.equal(placed.size, 21);
+    assert.equal(placed.modules.length, 21);
   });
 
-  test("QR finder patterns are placed correctly", () => {
-    const res = api.encodeQR("TEST");
-    assert.equal(res.error, undefined);
-    const m = res.qrModules;
-    // Top-left finder pattern: 7x7 block with outer dark ring
+  test("EncodeQR produces valid v1 and v2+ QR matrices and rejects empty or >v6 payloads", () => {
+    const res1 = api.encodeQR("12345");
+    assert.equal(res1.error, undefined);
+    assert.equal(res1.modeLabel, "QR v1 (21×21)");
+    assert.equal(res1.qrSize, 21);
+
+    const res2 = api.encodeQR("https://rajwanyair.github.io/barcode-label-studio/");
+    assert.equal(res2.error, undefined);
+    assert.ok(res2.qrSize > 21);
+
+    // Finder pattern check
+    const m = res1.qrModules;
     for (let r = 0; r < 7; r++) {
       for (let c = 0; c < 7; c++) {
         const isOuter = r === 0 || r === 6 || c === 0 || c === 6;
         const isInner = r >= 2 && r <= 4 && c >= 2 && c <= 4;
-        if (isOuter || isInner) assert.equal(m[r][c], 1, `Finder TL (${r},${c})`);
-        else assert.equal(m[r][c], 0, `Finder TL gap (${r},${c})`);
+        assert.equal(m[r][c], (isOuter || isInner) ? 1 : 0);
       }
     }
-    // Dark module at (s-8, 8)
-    assert.equal(m[res.qrSize - 8][8], 1, "Dark module");
-  });
+    assert.equal(m[res1.qrSize - 8][8], 1, "Dark module at (size-8, 8)");
 
-  test("QR rejects empty input", () => {
     assert.ok(api.encodeQR("").error);
+    assert.ok(api.encodeQR("X".repeat(250)).error);
   });
 });
 
-describe("Logo Upload & SVG Embedded Image", () => {
-  test("buildBarcodeSvgHtml 1D with logo injects image above bars", () => {
-    const built = api.buildBarcodeSvgHtml("4820019472", "CODE128", 2, 80, 12, 14, true, "data:image/png;base64,FAKELOGO");
-    assert.equal(built.error, undefined);
-    assert.match(built.svgHtml, /<image href="data:image\/png;base64,FAKELOGO"/);
-    assert.ok(built.totalHeight > 90);
+// ============================================================================
+// 5. SVG COMPOSITOR, CANVAS RASTERIZER, LOGO & CUSTOM TEXT SUITE
+// ============================================================================
+describe("SVG Compositor, Custom Text, Logo Overlay & Canvas Helpers", () => {
+  test("buildBarcodeSvgHtml renders 1D and QR with XML escaping, logos, and custom text (top & bottom)", () => {
+    const built1D = api.buildBarcodeSvgHtml(
+      "A&B<C>",
+      "CODE128",
+      2,
+      80,
+      12,
+      14,
+      true,
+      "data:image/png;base64,FAKELOGO",
+      "Property of <Acme>",
+      "top"
+    );
+    assert.equal(built1D.error, undefined);
+    assert.match(built1D.svgHtml, /A&amp;B&lt;C&gt;/);
+    assert.match(built1D.svgHtml, /Property of &lt;Acme&gt;/);
+    assert.match(built1D.svgHtml, /<image href="data:image\/png;base64,FAKELOGO"/);
+
+    const builtQRBottom = api.buildBarcodeSvgHtml(
+      "HELLO",
+      "QR",
+      2,
+      80,
+      12,
+      14,
+      true,
+      "data:image/png;base64,QRLOGO",
+      "Bottom Tag & Co",
+      "bottom"
+    );
+    assert.equal(builtQRBottom.error, undefined);
+    assert.match(builtQRBottom.svgHtml, /<image href="data:image\/png;base64,QRLOGO"/);
+    assert.match(builtQRBottom.svgHtml, /Bottom Tag &amp; Co/);
   });
 
-  test("buildBarcodeSvgHtml QR with logo centers logo over code", () => {
-    const built = api.buildBarcodeSvgHtml("HELLO", "QR", 2, 80, 12, 14, false, "data:image/png;base64,QRLOGO");
-    assert.equal(built.error, undefined);
-    assert.match(built.svgHtml, /<image href="data:image\/png;base64,QRLOGO"/);
+  test("svgElementToCanvas rasterizes SVG element at requested DPR", () => {
+    const mockSvg = elementsById.get("barcodeSvg");
+    mockSvg.setAttribute("width", "180");
+    mockSvg.setAttribute("height", "90");
+    let renderedCanvas = null;
+    api.svgElementToCanvas(mockSvg, 2, (canvas) => {
+      renderedCanvas = canvas;
+    });
+    assert.ok(renderedCanvas, "Expected svgElementToCanvas callback to receive canvas");
+    assert.equal(renderedCanvas.width, 360);
+    assert.equal(renderedCanvas.height, 180);
   });
 
-  test("buildBarcodeSvgHtml without logo does not inject image", () => {
-    const built = api.buildBarcodeSvgHtml("4820019472", "CODE128", 2, 80, 12, 14, true);
-    assert.equal(built.error, undefined);
-    assert.ok(!built.svgHtml.includes("<image href="));
+  test("safeFileSlug sanitizes filenames and parseNumericSuffix parses serial ranges", () => {
+    assert.equal(api.safeFileSlug("SN/100:200?test"), "SN_100_200_test");
+    assert.equal(api.safeFileSlug(""), "barcode");
+    assert.equal(api.safeFileSlug("A".repeat(80)).length, 40);
+
+    assert.deepEqual({ ...api.parseNumericSuffix("SN-00105") }, { prefix: "SN-", num: 105, digits: 5 });
+    assert.equal(api.parseNumericSuffix("NO-DIGITS"), null);
   });
 });
 
-describe("Bilingual (English/Hebrew RTL), Dark/Light Theme & Responsive Design", () => {
-  test("I18N dictionary has matching keys for English (en) and Hebrew (he)", () => {
-    assert.ok(api.I18N && api.I18N.en && api.I18N.he);
-    const enKeys = Object.keys(api.I18N.en).sort();
-    const heKeys = Object.keys(api.I18N.he).sort();
-    assert.deepEqual(enKeys, heKeys, "English and Hebrew dictionaries must have identical key sets");
-    assert.equal(api.I18N.he.appTitle, "סטודיו לתוויות ברקוד");
-  });
-
-  test("setLanguage switches between English (ltr) and Hebrew (rtl)", () => {
+// ============================================================================
+// 6. UI CONTROLLERS, BATCH PIPELINE, FILE PARSER, I18N & THEME SUITE
+// ============================================================================
+describe("UI Controllers, Batch Pipeline, File Parser, I18N (EN/HE) & Theme (Light/Dark)", () => {
+  test("setLanguage, getLanguage, setTheme, getTheme, and updateToolbarControls manage bilingual RTL/LTR and dark/light state", () => {
     assert.equal(api.setLanguage("he"), "he");
     assert.equal(api.getLanguage(), "he");
     assert.equal(docElement.getAttribute("lang"), "he");
     assert.equal(docElement.getAttribute("dir"), "rtl");
+    assert.equal(storageMap.get("bls_lang"), "he");
 
-    assert.equal(api.setLanguage("en"), "en");
-    assert.equal(api.getLanguage(), "en");
-    assert.equal(docElement.getAttribute("lang"), "en");
-    assert.equal(docElement.getAttribute("dir"), "ltr");
-  });
-
-  test("setTheme switches between light and dark modes", () => {
     assert.equal(api.setTheme("dark"), "dark");
     assert.equal(api.getTheme(), "dark");
     assert.equal(docElement.getAttribute("data-theme"), "dark");
+    assert.equal(storageMap.get("bls_theme"), "dark");
 
+    api.updateToolbarControls();
+    assert.equal(elementsById.get("langToggleBtn").textContent, "🌐 English");
+    assert.equal(elementsById.get("themeToggleBtn").textContent, "☀️ מצב בהיר");
+
+    assert.equal(api.setLanguage("en"), "en");
     assert.equal(api.setTheme("light"), "light");
-    assert.equal(api.getTheme(), "light");
+    assert.equal(docElement.getAttribute("lang"), "en");
+    assert.equal(docElement.getAttribute("dir"), "ltr");
     assert.equal(docElement.getAttribute("data-theme"), "light");
   });
 
-  test("index.html includes responsive media queries for tablet (1024px) and mobile (640px) and dark theme rules", () => {
-    assert.match(htmlContent, /@media\s*\(max-width:\s*1024px\)/, "Expected tablet responsive breakpoint");
-    assert.match(htmlContent, /@media\s*\(max-width:\s*640px\)/, "Expected mobile responsive breakpoint");
-    assert.match(htmlContent, /\[data-theme="dark"\]/, "Expected dark theme CSS custom properties");
+  test("showToast, batchShowToast, renderHistory, and renderBarcode update Single Mode UI state", () => {
+    api.showToast("Saved!");
+    assert.equal(elementsById.get("statusToast").textContent, "Saved!");
+
+    api.batchShowToast("Batch ready!");
+    assert.equal(elementsById.get("batchStatusToast").textContent, "Batch ready!");
+
+    api.renderHistory();
+    assert.ok(elementsById.get("historyList").children.length >= 3);
+
+    // Valid render
+    elementsById.get("barcodeInput").value = "4820019472";
+    elementsById.get("symbologySelect").value = "CODE128";
+    api.renderBarcode();
+    assert.equal(elementsById.get("metaMode").textContent, "Code 128C (Numeric)");
+    assert.equal(elementsById.get("downloadPngBtn").disabled, false);
+
+    // Error state render (wrong EAN-13 check digit)
+    elementsById.get("barcodeInput").value = "9780201379629";
+    elementsById.get("symbologySelect").value = "EAN13";
+    api.renderBarcode();
+    assert.equal(elementsById.get("downloadPngBtn").disabled, true);
+    assert.match(elementsById.get("autoFixBtn").textContent, /9780201379624/);
+
+    // Restore valid state
+    elementsById.get("barcodeInput").value = "4820019472";
+    elementsById.get("symbologySelect").value = "CODE128";
+    api.renderBarcode();
+  });
+
+  test("collectBatchValues, refreshBatchSheet, and parseFileAndAdd process text, CSV, and Excel batch inputs", () => {
+    elementsById.get("batchTextarea").value = "SN-1001\nSN-1002\nSN-1003";
+    const collected = api.collectBatchValues();
+    assert.deepEqual([...collected], ["SN-1001", "SN-1002", "SN-1003"]);
+
+    api.refreshBatchSheet();
+    assert.equal(elementsById.get("batchCount").textContent, 3);
+    assert.equal(elementsById.get("batchErrors").textContent, 0);
+    assert.equal(elementsById.get("stickerGrid").children.length, 3);
+
+    // Test CSV file ingestion via parseFileAndAdd
+    elementsById.get("batchTextarea").value = "";
+    api.parseFileAndAdd({
+      name: "serials.csv",
+      _content: "CSV-01,extra\nCSV-02,extra\n"
+    });
+    assert.equal(elementsById.get("batchCount").textContent, 2);
+    assert.match(elementsById.get("fileNameDisplay").textContent, /serials\.csv \(2 values\)/);
+
+    // Test XLSX file ingestion via parseFileAndAdd
+    api.parseFileAndAdd({
+      name: "inventory.xlsx",
+      _buffer: new ArrayBuffer(8)
+    });
+    assert.equal(elementsById.get("batchCount").textContent, 2);
+    assert.match(elementsById.get("fileNameDisplay").textContent, /inventory\.xlsx \(2 values\)/);
   });
 });
+
 

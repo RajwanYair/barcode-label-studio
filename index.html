@@ -2286,7 +2286,12 @@
             const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
             const json = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
             const values = [];
-            json.forEach(row => { if (row && row.length > 0 && row[0] != null) values.push(String(row[0]).trim()); });
+            json.forEach(row => {
+              if (row && row.length > 0 && row[0] != null) {
+                const cellVal = String(row[0]).trim();
+                if (cellVal) values.push(cellVal);
+              }
+            });
             batchValues = values;
             fileNameDisplay.textContent = `${file.name} (${values.length} values)`;
             refreshBatchSheet();
@@ -2520,30 +2525,58 @@
 
     if (typeof globalThis !== "undefined") {
       globalThis.__BARCODE_API__ = {
+        // Constants & Lookup Tables
         CODE128_PATTERNS,
+        CODE39_MAP,
+        CODE39_CHARS,
+        EAN_L,
+        EAN_G,
+        EAN_R,
+        EAN_PARITY,
+        ITF_WEIGHTS,
+        GF256_EXP,
+        GF256_LOG,
+        QR_VERSION_INFO,
+        QR_ALIGNMENT_POS,
+        QR_ECI_ALNUM,
+        STICKER_LAYOUTS,
+        I18N,
+        // Core 1D & 2D Encoders
         encodeCode128,
         encodeCode39,
         computeEan13CheckDigit,
         encodeEan13,
         encodeItf,
-        encodeQR,
-        encodeCurrent,
-        buildBarcodeSvgHtml,
-        parseNumericSuffix,
-        safeFileSlug,
-        STICKER_LAYOUTS,
-        QR_ECI_ALNUM,
-        qrPlaceModules,
-        qrInterleave,
-        qrTerminateAndPad,
+        gfMul,
+        rsGeneratePoly,
+        rsEncode,
+        qrGetVersionBitLen,
         qrEncodeAlpha,
         qrEncodeByte,
-        QR_VERSION_INFO,
-        I18N,
-        setLanguage,
+        qrTerminateAndPad,
+        qrInterleave,
+        qrPlaceModules,
+        encodeQR,
+        encodeCurrent,
+        // SVG & Canvas Rendering
+        buildBarcodeSvgHtml,
+        svgElementToCanvas,
+        safeFileSlug,
+        // I18N & Theme Management
         getLanguage,
+        setLanguage,
+        getTheme,
         setTheme,
-        getTheme
+        updateToolbarControls,
+        // Single & Batch UI Controllers
+        showToast,
+        renderHistory,
+        renderBarcode,
+        batchShowToast,
+        collectBatchValues,
+        parseFileAndAdd,
+        parseNumericSuffix,
+        refreshBatchSheet
       };
     }
 

@@ -221,9 +221,9 @@ python3 -m http.server 8080
 # Visit http://localhost:8080
 ```
 
-### 2. Run the Automated Unit Test Suite
+### 2. Run the Automated Unit & Meta-Guard Test Suite
 
-The repository includes a 24-test zero-dependency suite in [`tests/barcode.test.js`](tests/barcode.test.js) powered by Node's built-in `node:test` and `node:vm` modules:
+The repository includes a comprehensive **31-test zero-dependency suite** in [`tests/barcode.test.js`](tests/barcode.test.js) powered by Node's built-in `node:test` and `node:vm` modules:
 
 ```bash
 npm test
@@ -231,14 +231,12 @@ npm test
 node --test tests/barcode.test.js
 ```
 
-**What the test suite verifies:**
-- **Repository & DOM Integrity**: Confirms all required documentation files exist and every DOM ID queried during initialization is present in [`index.html`](index.html).
-- **Code 128 (`128B`/`128C`)**: Validates all 107 pattern entries, even-digit `128C` compaction, `128B` ASCII encoding, mixed `128B`↔`128C` transitions, and invalid character rejection.
-- **Code 39**: Verifies uppercase normalization, start/stop patterns, Modulo 43 telemetry, and Code 128 fallback hints.
-- **EAN-13**: Verifies GS1 check-digit calculation (`978020137962` → `4`), 95-module bit length, wrong check-digit detection (`fixValue`), and non-numeric rejection.
-- **ITF**: Verifies even-length encoding and automatic leading-zero padding on odd-length numeric inputs.
-- **QR Code (ISO/IEC 18004)**: Verifies Version 1 ($21\times21$) and Version 2+ scaling, $7\times7$ finder pattern rings, dark module placement, and empty-input handling.
-- **Logo Embedding & XML Safety**: Verifies `<image>` injection for 1D header banners and QR center badges, plus strict XML entity escaping (`&amp;`, `&lt;`, `&gt;`).
+**What the test suite enforces on every change:**
+- **Meta-Guard (100% Function & Constant Coverage Gate)**: Automatically parses [`index.html`](index.html) for every top-level `function` declaration (all 32 functions) and lookup table (all 15 constants) and fails if any function is not exported on `globalThis.__BARCODE_API__` or not directly tested in [`tests/barcode.test.js`](tests/barcode.test.js).
+- **100% Bilingual I18N & DOM Integrity Gate**: Extracts every `id="..."`, `data-i18n="..."`, and `data-i18n-placeholder="..."` attribute from [`index.html`](index.html) and verifies DOM presence plus complete English (`I18N.en`) and Hebrew (`I18N.he`) translations.
+- **Configuration, Workflow, SVG & Documentation Link Gate**: Validates [`package.json`](package.json), [`.github/workflows/ci.yml`](.github/workflows/ci.yml), issue/PR templates, `.nojekyll`, Mermaid diagrams (`flowchart LR`, `stateDiagram-v2`, `flowchart TD`), well-formedness & accessibility (`<title>`/`<desc>`) of all SVG diagrams in `assets/`, and verifies that every local link in [`README.md`](README.md) and [`CONTRIBUTING.md`](CONTRIBUTING.md) resolves to an existing file on disk.
+- **All 1D & 2D Encoders & Mathematical Helpers**: Tests `encodeCode128`, `encodeCode39`, `computeEan13CheckDigit`, `encodeEan13`, `encodeItf`, `gfMul`, `rsGeneratePoly`, `rsEncode`, `qrGetVersionBitLen`, `qrEncodeAlpha`, `qrEncodeByte`, `qrTerminateAndPad`, `qrInterleave`, `qrPlaceModules`, `encodeQR`, and `encodeCurrent`.
+- **Rendering, UI Controllers & Batch File Ingestion**: Tests `buildBarcodeSvgHtml`, `svgElementToCanvas`, `safeFileSlug`, `getLanguage`, `setLanguage`, `getTheme`, `setTheme`, `updateToolbarControls`, `showToast`, `batchShowToast`, `renderHistory`, `renderBarcode`, `collectBatchValues`, `parseNumericSuffix`, `refreshBatchSheet`, and `parseFileAndAdd` (`.txt`, `.csv`, `.xlsx`).
 
 ---
 
