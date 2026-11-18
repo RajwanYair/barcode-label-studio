@@ -1,0 +1,127 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 340" width="100%" height="auto" role="img" aria-labelledby="flowTitle flowDesc">
+  <title id="flowTitle">Barcode Label Studio — Client-Side Processing Pipeline</title>
+  <desc id="flowDesc">Four-stage pipeline from input ingestion through symbology encoding, SVG layout composition, and multi-format export.</desc>
+  <defs>
+    <linearGradient id="stageHead1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+    <linearGradient id="stageHead2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2563eb" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+    <linearGradient id="stageHead3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#7c3aed" />
+      <stop offset="100%" stop-color="#6d28d9" />
+    </linearGradient>
+    <linearGradient id="stageHead4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#047857" />
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b" />
+    </marker>
+  </defs>
+
+  <!-- Outer Frame -->
+  <rect width="1200" height="340" rx="14" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" />
+  <text x="32" y="36" fill="#0f172a" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="18" font-weight="700">Zero-Backend Client-Side Architecture &amp; Execution Flow</text>
+  <text x="1168" y="36" fill="#475569" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" text-anchor="end">100% In-Browser • 0 Network Calls</text>
+
+  <!-- Stage 1: Input & Ingestion -->
+  <g transform="translate(28, 56)">
+    <rect width="256" height="256" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
+    <rect width="256" height="40" rx="10" fill="url(#stageHead1)" />
+    <rect y="30" width="256" height="10" fill="url(#stageHead1)" />
+    <text x="16" y="25" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="700">1. Input &amp; Data Ingestion</text>
+
+    <g transform="translate(16, 56)" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12.5" fill="#1e293b">
+      <rect x="0" y="0" width="224" height="36" rx="6" fill="#f1f5f9" stroke="#e2e8f0" />
+      <text x="12" y="22" font-weight="600">Single String &amp; Live Quick-Fix</text>
+
+      <rect x="0" y="46" width="224" height="36" rx="6" fill="#f1f5f9" stroke="#e2e8f0" />
+      <text x="12" y="68" font-weight="600">Batch Multi-Line Text List</text>
+
+      <rect x="0" y="92" width="224" height="36" rx="6" fill="#f1f5f9" stroke="#e2e8f0" />
+      <text x="12" y="114" font-weight="600">Range Generator (SN-001..999)</text>
+
+      <rect x="0" y="138" width="224" height="36" rx="6" fill="#f1f5f9" stroke="#e2e8f0" />
+      <text x="12" y="160" font-weight="600">File Parser (.txt/.csv/.tsv/.xlsx)</text>
+    </g>
+  </g>
+
+  <!-- Connector 1 -> 2 -->
+  <line x1="284" y1="184" x2="316" y2="184" stroke="#64748b" stroke-width="2.5" marker-end="url(#arrow)" />
+
+  <!-- Stage 2: Symbology & Check-Digit Engine -->
+  <g transform="translate(324, 56)">
+    <rect width="256" height="256" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
+    <rect width="256" height="40" rx="10" fill="url(#stageHead2)" />
+    <rect y="30" width="256" height="10" fill="url(#stageHead2)" />
+    <text x="16" y="25" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="700">2. Symbology &amp; ECC Engine</text>
+
+    <g transform="translate(16, 56)" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12.5" fill="#1e293b">
+      <rect x="0" y="0" width="224" height="36" rx="6" fill="#eff6ff" stroke="#bfdbfe" />
+      <text x="12" y="22" font-weight="600">Code 128 Auto (128B/C + Mod 103)</text>
+
+      <rect x="0" y="46" width="224" height="36" rx="6" fill="#eff6ff" stroke="#bfdbfe" />
+      <text x="12" y="68" font-weight="600">Code 39 Full Upper + Mod 43</text>
+
+      <rect x="0" y="92" width="224" height="36" rx="6" fill="#eff6ff" stroke="#bfdbfe" />
+      <text x="12" y="114" font-weight="600">EAN-13 GS1 Check Digit &amp; Fixer</text>
+
+      <rect x="0" y="138" width="224" height="36" rx="6" fill="#eff6ff" stroke="#bfdbfe" />
+      <text x="12" y="160" font-weight="600">ITF-14 &amp; QR v1–v6 (Reed-Solomon)</text>
+    </g>
+  </g>
+
+  <!-- Connector 2 -> 3 -->
+  <line x1="580" y1="184" x2="612" y2="184" stroke="#64748b" stroke-width="2.5" marker-end="url(#arrow)" />
+
+  <!-- Stage 3: Vector Compositor & Layout -->
+  <g transform="translate(620, 56)">
+    <rect width="256" height="256" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
+    <rect width="256" height="40" rx="10" fill="url(#stageHead3)" />
+    <rect y="30" width="256" height="10" fill="url(#stageHead3)" />
+    <text x="16" y="25" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="700">3. SVG &amp; Sheet Compositor</text>
+
+    <g transform="translate(16, 56)" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12.5" fill="#1e293b">
+      <rect x="0" y="0" width="224" height="36" rx="6" fill="#f5f3ff" stroke="#ddd6fe" />
+      <text x="12" y="22" font-weight="600">Precision Vector &lt;svg&gt; Builder</text>
+
+      <rect x="0" y="46" width="224" height="36" rx="6" fill="#f5f3ff" stroke="#ddd6fe" />
+      <text x="12" y="68" font-weight="600">Brand Logo Banner / QR Badge</text>
+
+      <rect x="0" y="92" width="224" height="36" rx="6" fill="#f5f3ff" stroke="#ddd6fe" />
+      <text x="12" y="114" font-weight="600">Avery A4 &amp; US Letter mm Grids</text>
+
+      <rect x="0" y="138" width="224" height="36" rx="6" fill="#f5f3ff" stroke="#ddd6fe" />
+      <text x="12" y="160" font-weight="600">Auto-Fit Scaling &amp; Page Breaks</text>
+    </g>
+  </g>
+
+  <!-- Connector 3 -> 4 -->
+  <line x1="876" y1="184" x2="908" y2="184" stroke="#64748b" stroke-width="2.5" marker-end="url(#arrow)" />
+
+  <!-- Stage 4: Export & Physical Print -->
+  <g transform="translate(916, 56)">
+    <rect width="256" height="256" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
+    <rect width="256" height="40" rx="10" fill="url(#stageHead4)" />
+    <rect y="30" width="256" height="10" fill="url(#stageHead4)" />
+    <text x="16" y="25" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="700">4. Export &amp; Production Print</text>
+
+    <g transform="translate(16, 56)" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12.5" fill="#1e293b">
+      <rect x="0" y="0" width="224" height="36" rx="6" fill="#ecfdf5" stroke="#a7f3d0" />
+      <text x="12" y="22" font-weight="600">2x Retina PNG &amp; Crisp Vector SVG</text>
+
+      <rect x="0" y="46" width="224" height="36" rx="6" fill="#ecfdf5" stroke="#a7f3d0" />
+      <text x="12" y="68" font-weight="600">One-Click Clipboard Image Copy</text>
+
+      <rect x="0" y="92" width="224" height="36" rx="6" fill="#ecfdf5" stroke="#a7f3d0" />
+      <text x="12" y="114" font-weight="600">Native @media print Sheet Engine</text>
+
+      <rect x="0" y="138" width="224" height="36" rx="6" fill="#ecfdf5" stroke="#a7f3d0" />
+      <text x="12" y="160" font-weight="600">Print-Ready Multi-Page PDF</text>
+    </g>
+  </g>
+</svg>

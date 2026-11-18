@@ -1,0 +1,207 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 420" width="100%" height="auto" role="img" aria-labelledby="heroTitle heroDesc">
+  <title id="heroTitle">Barcode Label Studio — Zero-Backend 1D &amp; 2D QR Barcode &amp; Sticker Sheet Printing Studio</title>
+  <desc id="heroDesc">Hero banner showcasing single barcode generation, QR code with logo overlay, and Avery A4/US Letter batch sticker sheet printing.</desc>
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b132b" />
+      <stop offset="50%" stop-color="#111d3a" />
+      <stop offset="100%" stop-color="#0f2942" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#2563eb" />
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#f8fafc" />
+    </linearGradient>
+    <filter id="shadow" x="-8%" y="-8%" width="116%" height="120%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#020617" flood-opacity="0.45" />
+    </filter>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#1e293b" stroke-width="1" />
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="420" rx="18" fill="url(#bgGrad)" />
+  <rect width="1200" height="420" rx="18" fill="url(#grid)" opacity="0.45" />
+
+  <!-- Decorative glow -->
+  <circle cx="950" cy="90" r="180" fill="#2563eb" opacity="0.18" />
+  <circle cx="820" cy="340" r="160" fill="#0ea5e9" opacity="0.14" />
+
+  <!-- Left Column: Branding & Value Proposition -->
+  <g transform="translate(56, 54)">
+    <!-- Status Pill -->
+    <rect x="0" y="0" width="308" height="30" rx="15" fill="#1e293b" stroke="#38bdf8" stroke-width="1" />
+    <circle cx="18" cy="15" r="5" fill="#22c55e" />
+    <text x="32" y="20" fill="#e2e8f0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="600" letter-spacing="0.4">ZERO-BACKEND • SINGLE HTML FILE • MIT LICENSE</text>
+
+    <!-- Main Title -->
+    <text x="0" y="84" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="44" font-weight="800" letter-spacing="-0.8">Barcode Label Studio</text>
+    <text x="0" y="122" fill="#38bdf8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="21" font-weight="600">1D &amp; 2D QR Barcode Engine + Batch Sticker Sheet Printing</text>
+
+    <!-- Description -->
+    <text x="0" y="162" fill="#cbd5e1" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="15">Standards-compliant Code 128B/C, Code 39, EAN-13, ITF, and ISO/IEC 18004 QR Codes</text>
+    <text x="0" y="186" fill="#cbd5e1" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="15">with custom brand logo embedding and physical millimeter Avery A4 &amp; US Letter sheets.</text>
+
+    <!-- Feature Badges Row 1 -->
+    <g transform="translate(0, 222)" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="600">
+      <rect x="0" y="0" width="122" height="30" rx="6" fill="#0f172a" stroke="#334155" />
+      <text x="61" y="19" fill="#38bdf8" text-anchor="middle">Code 128 B/C</text>
+
+      <rect x="132" y="0" width="96" height="30" rx="6" fill="#0f172a" stroke="#334155" />
+      <text x="180" y="19" fill="#38bdf8" text-anchor="middle">Code 39</text>
+
+      <rect x="238" y="0" width="96" height="30" rx="6" fill="#0f172a" stroke="#334155" />
+      <text x="286" y="19" fill="#38bdf8" text-anchor="middle">EAN-13</text>
+
+      <rect x="344" y="0" width="84" height="30" rx="6" fill="#0f172a" stroke="#334155" />
+      <text x="386" y="19" fill="#38bdf8" text-anchor="middle">ITF-14</text>
+
+      <rect x="438" y="0" width="118" height="30" rx="6" fill="#0f172a" stroke="#334155" />
+      <text x="497" y="19" fill="#38bdf8" text-anchor="middle">QR v1–v6 ECC</text>
+    </g>
+
+    <!-- Feature Badges Row 2 -->
+    <g transform="translate(0, 262)" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="600">
+      <rect x="0" y="0" width="142" height="30" rx="6" fill="#0f172a" stroke="#334155" />
+      <text x="71" y="19" fill="#a7f3d0" text-anchor="middle">Logo Embedding</text>
+
+      <rect x="152" y="0" width="166" height="30" rx="6" fill="#0f172a" stroke="#334155" />
+      <text x="235" y="19" fill="#a7f3d0" text-anchor="middle">Avery A4 &amp; US Letter</text>
+
+      <rect x="328" y="0" width="148" height="30" rx="6" fill="#0f172a" stroke="#334155" />
+      <text x="402" y="19" fill="#a7f3d0" text-anchor="middle">CSV / XLSX Import</text>
+
+      <rect x="486" y="0" width="128" height="30" rx="6" fill="#0f172a" stroke="#334155" />
+      <text x="550" y="19" fill="#a7f3d0" text-anchor="middle">SVG / 2x PNG</text>
+    </g>
+  </g>
+
+  <!-- Right Column: Visual Workbench Cards -->
+  <!-- Card 1: Single 1D Barcode Card -->
+  <g transform="translate(690, 38)" filter="url(#shadow)">
+    <rect width="260" height="164" rx="12" fill="url(#cardGrad)" stroke="#cbd5e1" stroke-width="1.5" />
+    <rect x="14" y="12" width="84" height="18" rx="4" fill="#e0f2fe" />
+    <text x="56" y="24" fill="#0369a1" font-family="'JetBrains Mono', Consolas, monospace" font-size="10" font-weight="700" text-anchor="middle">CODE 128C</text>
+    <text x="244" y="24" fill="#475569" font-family="'JetBrains Mono', Consolas, monospace" font-size="10" text-anchor="end">Mod 103: 42</text>
+
+    <!-- Barcode Bars -->
+    <g transform="translate(26, 40)" fill="#0f172a">
+      <rect x="0" y="0" width="4" height="76" />
+      <rect x="6" y="0" width="2" height="76" />
+      <rect x="12" y="0" width="6" height="76" />
+      <rect x="22" y="0" width="2" height="76" />
+      <rect x="26" y="0" width="4" height="76" />
+      <rect x="34" y="0" width="6" height="76" />
+      <rect x="44" y="0" width="2" height="76" />
+      <rect x="48" y="0" width="4" height="76" />
+      <rect x="56" y="0" width="2" height="76" />
+      <rect x="62" y="0" width="8" height="76" />
+      <rect x="74" y="0" width="2" height="76" />
+      <rect x="80" y="0" width="4" height="76" />
+      <rect x="88" y="0" width="6" height="76" />
+      <rect x="98" y="0" width="2" height="76" />
+      <rect x="104" y="0" width="4" height="76" />
+      <rect x="112" y="0" width="6" height="76" />
+      <rect x="122" y="0" width="2" height="76" />
+      <rect x="128" y="0" width="4" height="76" />
+      <rect x="136" y="0" width="8" height="76" />
+      <rect x="148" y="0" width="2" height="76" />
+      <rect x="154" y="0" width="4" height="76" />
+      <rect x="162" y="0" width="6" height="76" />
+      <rect x="172" y="0" width="2" height="76" />
+      <rect x="178" y="0" width="4" height="76" />
+      <rect x="186" y="0" width="6" height="76" />
+      <rect x="196" y="0" width="2" height="76" />
+      <rect x="202" y="0" width="6" height="76" />
+    </g>
+    <text x="130" y="138" fill="#0f172a" font-family="'JetBrains Mono', Consolas, monospace" font-size="14" font-weight="700" text-anchor="middle" letter-spacing="2">4820019472</text>
+  </g>
+
+  <!-- Card 2: QR Code with Brand Logo Overlay -->
+  <g transform="translate(970, 38)" filter="url(#shadow)">
+    <rect width="184" height="164" rx="12" fill="url(#cardGrad)" stroke="#cbd5e1" stroke-width="1.5" />
+    <rect x="14" y="12" width="76" height="18" rx="4" fill="#dcfce7" />
+    <text x="52" y="24" fill="#15803d" font-family="'JetBrains Mono', Consolas, monospace" font-size="10" font-weight="700" text-anchor="middle">QR + LOGO</text>
+    <text x="170" y="24" fill="#475569" font-family="'JetBrains Mono', Consolas, monospace" font-size="10" text-anchor="end">v2 (25×25)</text>
+
+    <!-- Stylized QR Matrix -->
+    <g transform="translate(44, 38)" fill="#0f172a">
+      <!-- Top-Left Finder -->
+      <path d="M0,0 h28 v28 h-28 z M4,4 v20 h20 v-20 z M8,8 h12 v12 h-12 z" fill-rule="evenodd" />
+      <!-- Top-Right Finder -->
+      <path d="M68,0 h28 v28 h-28 z M72,4 v20 h20 v-20 z M76,8 h12 v12 h-12 z" fill-rule="evenodd" />
+      <!-- Bottom-Left Finder -->
+      <path d="M0,68 h28 v28 h-28 z M4,72 v20 h20 v-20 z M8,76 h12 v12 h-12 z" fill-rule="evenodd" />
+      <!-- Data modules -->
+      <rect x="36" y="4" width="8" height="8" />
+      <rect x="48" y="4" width="4" height="12" />
+      <rect x="56" y="8" width="8" height="8" />
+      <rect x="36" y="20" width="12" height="4" />
+      <rect x="4" y="36" width="8" height="8" />
+      <rect x="16" y="40" width="8" height="12" />
+      <rect x="4" y="52" width="12" height="8" />
+      <rect x="76" y="36" width="8" height="8" />
+      <rect x="84" y="48" width="12" height="8" />
+      <rect x="72" y="60" width="8" height="12" />
+      <rect x="36" y="76" width="8" height="8" />
+      <rect x="52" y="72" width="12" height="8" />
+      <rect x="44" y="84" width="16" height="8" />
+      <rect x="68" y="80" width="16" height="16" />
+      <rect x="72" y="84" width="8" height="8" fill="#ffffff" />
+      <rect x="74" y="86" width="4" height="4" />
+      <!-- Center Brand Badge -->
+      <rect x="32" y="32" width="32" height="32" rx="6" fill="#ffffff" stroke="#2563eb" stroke-width="2" />
+      <rect x="36" y="36" width="24" height="24" rx="4" fill="#2563eb" />
+      <text x="48" y="52" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="800" text-anchor="middle">BLS</text>
+    </g>
+    <text x="92" y="150" fill="#475569" font-family="'JetBrains Mono', Consolas, monospace" font-size="10" text-anchor="middle">ISO/IEC 18004</text>
+  </g>
+
+  <!-- Card 3: Batch Avery Die-Cut Sticker Sheet Preview -->
+  <g transform="translate(690, 218)" filter="url(#shadow)">
+    <rect width="464" height="164" rx="12" fill="url(#cardGrad)" stroke="#cbd5e1" stroke-width="1.5" />
+    <text x="18" y="25" fill="#0f172a" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" font-weight="700">Batch Sticker Sheet Print — Avery A4 (3×8) &amp; US Letter (3×10)</text>
+    <rect x="358" y="10" width="90" height="20" rx="4" fill="#dbeafe" />
+    <text x="403" y="24" fill="#1d4ed8" font-family="'JetBrains Mono', Consolas, monospace" font-size="10" font-weight="700" text-anchor="middle">100% @page</text>
+
+    <!-- 3x2 Sticker Grid Preview -->
+    <g transform="translate(18, 38)">
+      <!-- Row 1 -->
+      <g transform="translate(0, 0)">
+        <rect width="136" height="50" rx="5" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="3,2" />
+        <path d="M18,10 v22 M22,10 v22 M28,10 v22 M32,10 v22 M38,10 v22 M44,10 v22 M48,10 v22 M54,10 v22 M60,10 v22 M66,10 v22 M72,10 v22 M78,10 v22 M84,10 v22 M90,10 v22 M96,10 v22 M102,10 v22 M108,10 v22 M114,10 v22" stroke="#0f172a" stroke-width="2" />
+        <text x="68" y="44" fill="#334155" font-family="'JetBrains Mono', Consolas, monospace" font-size="9" text-anchor="middle">SN-00101</text>
+      </g>
+      <g transform="translate(146, 0)">
+        <rect width="136" height="50" rx="5" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="3,2" />
+        <path d="M18,10 v22 M24,10 v22 M28,10 v22 M34,10 v22 M40,10 v22 M44,10 v22 M50,10 v22 M56,10 v22 M62,10 v22 M66,10 v22 M72,10 v22 M78,10 v22 M82,10 v22 M88,10 v22 M94,10 v22 M100,10 v22 M106,10 v22 M114,10 v22" stroke="#0f172a" stroke-width="2" />
+        <text x="68" y="44" fill="#334155" font-family="'JetBrains Mono', Consolas, monospace" font-size="9" text-anchor="middle">SN-00102</text>
+      </g>
+      <g transform="translate(292, 0)">
+        <rect width="136" height="50" rx="5" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="3,2" />
+        <path d="M18,10 v22 M22,10 v22 M26,10 v22 M32,10 v22 M38,10 v22 M44,10 v22 M50,10 v22 M54,10 v22 M60,10 v22 M66,10 v22 M70,10 v22 M76,10 v22 M82,10 v22 M88,10 v22 M94,10 v22 M102,10 v22 M108,10 v22 M114,10 v22" stroke="#0f172a" stroke-width="2" />
+        <text x="68" y="44" fill="#334155" font-family="'JetBrains Mono', Consolas, monospace" font-size="9" text-anchor="middle">SN-00103</text>
+      </g>
+      <!-- Row 2 -->
+      <g transform="translate(0, 58)">
+        <rect width="136" height="50" rx="5" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="3,2" />
+        <path d="M18,10 v22 M24,10 v22 M30,10 v22 M34,10 v22 M40,10 v22 M46,10 v22 M52,10 v22 M58,10 v22 M62,10 v22 M68,10 v22 M74,10 v22 M80,10 v22 M86,10 v22 M90,10 v22 M96,10 v22 M102,10 v22 M108,10 v22 M114,10 v22" stroke="#0f172a" stroke-width="2" />
+        <text x="68" y="44" fill="#334155" font-family="'JetBrains Mono', Consolas, monospace" font-size="9" text-anchor="middle">SN-00104</text>
+      </g>
+      <g transform="translate(146, 58)">
+        <rect width="136" height="50" rx="5" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="3,2" />
+        <path d="M18,10 v22 M22,10 v22 M28,10 v22 M34,10 v22 M40,10 v22 M46,10 v22 M50,10 v22 M56,10 v22 M62,10 v22 M68,10 v22 M74,10 v22 M78,10 v22 M84,10 v22 M90,10 v22 M96,10 v22 M102,10 v22 M108,10 v22 M114,10 v22" stroke="#0f172a" stroke-width="2" />
+        <text x="68" y="44" fill="#334155" font-family="'JetBrains Mono', Consolas, monospace" font-size="9" text-anchor="middle">SN-00105</text>
+      </g>
+      <g transform="translate(292, 58)">
+        <rect width="136" height="50" rx="5" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="3,2" />
+        <path d="M18,10 v22 M24,10 v22 M28,10 v22 M32,10 v22 M38,10 v22 M44,10 v22 M50,10 v22 M56,10 v22 M60,10 v22 M66,10 v22 M72,10 v22 M78,10 v22 M84,10 v22 M90,10 v22 M96,10 v22 M100,10 v22 M106,10 v22 M114,10 v22" stroke="#0f172a" stroke-width="2" />
+        <text x="68" y="44" fill="#334155" font-family="'JetBrains Mono', Consolas, monospace" font-size="9" text-anchor="middle">SN-00106</text>
+      </g>
+    </g>
+  </g>
+</svg>

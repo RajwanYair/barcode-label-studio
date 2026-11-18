@@ -101,7 +101,10 @@ describe("Repository & HTML Structure Integrity", () => {
       ".gitignore",
       ".github/ISSUE_TEMPLATE/bug_report.md",
       ".github/ISSUE_TEMPLATE/feature_request.md",
-      ".github/PULL_REQUEST_TEMPLATE.md"
+      ".github/PULL_REQUEST_TEMPLATE.md",
+      "assets/hero-banner.svg",
+      "assets/architecture-flow.svg",
+      "assets/sticker-presets.svg"
     ];
 
     for (const relPath of requiredFiles) {
@@ -110,6 +113,10 @@ describe("Repository & HTML Structure Integrity", () => {
       const stat = fs.statSync(fullPath);
       assert.ok(stat.size > 20, `File ${relPath} is unexpectedly empty (${stat.size} bytes)`);
     }
+
+    const readme = fs.readFileSync(path.join(ROOT_DIR, "README.md"), "utf8");
+    assert.match(readme, /```mermaid/, "Expected Mermaid diagrams in README.md");
+    assert.match(readme, /https:\/\/rajwanyair\.github\.io\/barcode-label-studio\//, "Expected live GitHub Pages URL in README.md");
   });
 
   test("All DOM element IDs queried during initialization exist in index.html", () => {
