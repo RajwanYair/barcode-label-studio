@@ -316,6 +316,7 @@
 
     .range-val {
       font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
       color: var(--ink-primary);
       font-weight: 600;
     }
@@ -344,11 +345,98 @@
       cursor: pointer;
     }
 
+    .branding-box {
+      margin-top: 14px;
+      padding: 12px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-hairline);
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .branding-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .branding-row input[type="text"] {
+      flex: 1;
+      min-width: 140px;
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      padding: 7px 10px;
+    }
+
+    .branding-row select {
+      width: auto;
+      min-width: 125px;
+      font-size: 0.83rem;
+      padding: 7px 10px;
+    }
+
     /* Right column: Thermal Label Stage */
     .stage-panel {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
+    }
+
+    .stage-inspector-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .iso-grade-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.73rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(6, 118, 71, 0.12);
+      color: var(--success);
+      border: 1px solid rgba(6, 118, 71, 0.3);
+    }
+
+    .iso-grade-pill.warn {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border-color: var(--danger-border);
+    }
+
+    .stage-tools {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .mini-tool-btn {
+      font-family: var(--font-mono);
+      font-size: 0.73rem;
+      font-weight: 600;
+      padding: 4px 9px;
+      border-radius: 4px;
+      border: 1px solid var(--border-hairline);
+      background: var(--bg-subtle);
+      color: var(--ink-secondary);
+      cursor: pointer;
+      transition: border-color 0.12s ease, color 0.12s ease, background 0.12s ease;
+    }
+
+    .mini-tool-btn:hover,
+    .mini-tool-btn.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-soft);
     }
 
     .label-bed {
@@ -358,28 +446,68 @@
         var(--bg-bed);
       border: 1px solid var(--border-hairline);
       border-radius: 6px;
-      min-height: 240px;
-      padding: 28px 20px;
+      min-height: 250px;
+      padding: 34px 20px 26px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       position: relative;
-      overflow-x: auto;
+      overflow: auto;
+    }
+
+    .bed-ruler {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 18px;
+      background: var(--bg-subtle);
+      border-bottom: 1px solid var(--border-hairline);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      font-family: var(--font-mono);
+      font-size: 0.63rem;
+      color: var(--ink-muted);
+      user-select: none;
+      pointer-events: none;
+      direction: ltr;
     }
 
     .thermal-sticker {
       background: #ffffff;
       color: #11161c;
       border: 1px solid #cfd7df;
-      border-radius: 4px;
+      border-radius: 6px;
       padding: 18px 22px;
-      box-shadow: 0 3px 10px rgba(17, 22, 28, 0.12);
+      box-shadow: 0 6px 18px rgba(17, 22, 28, 0.14);
       max-width: 100%;
       overflow-x: auto;
       display: flex;
       flex-direction: column;
       align-items: center;
+      position: relative;
+      transition: transform 0.15s ease;
+      transform-origin: center center;
+    }
+
+    .laser-scanline {
+      display: none;
+      position: absolute;
+      left: -8px;
+      right: -8px;
+      top: 46%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent 0%, #ef4444 15%, #ff2a2a 50%, #ef4444 85%, transparent 100%);
+      box-shadow: 0 0 8px 1px rgba(239, 68, 68, 0.75);
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    .thermal-sticker.scanline-on .laser-scanline {
+      display: block;
     }
 
     #barcodeSvg {
@@ -633,6 +761,9 @@
       .header-bar,
       .tab-bar,
       .controls-panel,
+      .stage-inspector-bar,
+      .bed-ruler,
+      .laser-scanline,
       .telemetry-strip,
       .action-bar,
       .error-banner,
@@ -640,8 +771,13 @@
       .batch-controls,
       .batch-stats,
       .batch-empty,
-      .batch-export-bar {
+      .batch-export-bar,
+      .studio-footer {
         display: none !important;
+      }
+      .sticker-cell.skipped {
+        visibility: hidden !important;
+        border: none !important;
       }
       .workbench,
       .single-workbench,
@@ -841,6 +977,55 @@
       direction: ltr;
     }
 
+    .sticker-cell.skipped {
+      background: var(--bg-subtle);
+      border: 1px dashed var(--border-strong);
+      opacity: 0.55;
+    }
+
+    .studio-footer {
+      width: 100%;
+      max-width: 1200px;
+      margin: 28px auto 0;
+      padding-top: 14px;
+      border-top: 1px solid var(--border-hairline);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 0.76rem;
+      color: var(--ink-muted);
+    }
+
+    .kbd-hint {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    kbd {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-hairline);
+      color: var(--ink-secondary);
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        transition: none !important;
+      }
+    }
+
     .batch-empty {
       background: var(--bg-subtle);
       border: 2px dashed var(--border-hairline);
@@ -911,14 +1096,42 @@
           <div class="range-control"><div class="range-control-top"><label for="fontSize" data-i18n="labelFontSize">Label size</label><span class="range-val ltr-code" id="fontSizeVal">16 px</span></div><input id="fontSize" type="range" min="11" max="24" step="1" value="16" /></div>
         </div>
         <label class="checkbox-row"><input type="checkbox" id="showText" checked /> <span data-i18n="labelShowText">Show human-readable value below bars</span></label>
+        <div class="branding-box">
+          <div class="field-header" style="margin-bottom:0;"><label for="singleCustomText" data-i18n="labelStickerText">Sticker Text (optional)</label></div>
+          <div class="branding-row">
+            <input type="text" id="singleCustomText" placeholder="e.g. Property of Acme Corp" data-i18n-placeholder="placeholderStickerText" />
+            <select id="singleTextPos">
+              <option value="top" data-i18n="posTop" selected>Above barcode</option>
+              <option value="bottom" data-i18n="posBottom">Below barcode</option>
+            </select>
+          </div>
+          <div class="branding-row">
+            <label for="logoInput" data-i18n="labelLogo" style="font-size:0.8rem;">Company Logo (optional)</label>
+            <button type="button" class="clear-btn" id="singleLogoBtn" data-i18n="btnUploadLogo" style="padding:4px 10px;font-size:0.76rem;">Choose Logo</button>
+            <button type="button" class="clear-btn" id="singleLogoClearBtn" data-i18n="btnClear" style="padding:4px 10px;font-size:0.76rem;">Clear</button>
+          </div>
+        </div>
         <div class="history-section">
           <div class="history-header"><span data-i18n="labelRecent">Recent values</span><button type="button" class="clear-btn" id="saveHistoryBtn" data-i18n="btnPinCurrent" style="padding:2px 8px;font-size:0.74rem;">Pin current</button></div>
           <div class="history-list" id="historyList"></div>
         </div>
       </section>
       <section class="panel stage-panel">
+        <div class="stage-inspector-bar">
+          <span class="iso-grade-pill" id="isoGradeBadge">✓ ISO Quiet Zone OK</span>
+          <div class="stage-tools">
+            <button type="button" class="mini-tool-btn" id="scanLineToggleBtn" data-i18n="btnLaserGuide">Laser Guide</button>
+            <button type="button" class="mini-tool-btn ltr-code" id="stageZoomBtn">🔍 100%</button>
+          </div>
+        </div>
         <div class="error-banner" id="errorBanner" role="alert"><span id="errorText"></span><button type="button" class="fix-btn" id="autoFixBtn" data-i18n="btnSwitch128">Switch to Code 128</button></div>
-        <div class="label-bed"><div class="thermal-sticker" id="stickerContainer"><svg id="barcodeSvg" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Generated barcode"></svg></div></div>
+        <div class="label-bed">
+          <div class="bed-ruler"><span>0 px</span><span>50 px</span><span>100 px</span><span>150 px</span><span>200 px</span><span>250 px</span></div>
+          <div class="thermal-sticker" id="stickerContainer">
+            <div class="laser-scanline" id="laserScanline"></div>
+            <svg id="barcodeSvg" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Generated barcode"></svg>
+          </div>
+        </div>
         <div class="telemetry-strip">
           <div class="telemetry-item"><span data-i18n="metaEncodingMode">Encoding Mode</span><strong class="ltr-code" id="metaMode">Code 128C</strong></div>
           <div class="telemetry-item"><span data-i18n="metaCheckChar">Check Character</span><strong class="ltr-code" id="metaChecksum">Mod 103: 45</strong></div>
@@ -999,6 +1212,8 @@
           <option value="QR" data-i18n="batchSymQr">QR Code (2D)</option>
         </select>
         <label class="checkbox-row" style="margin:0 12px;"><input type="checkbox" id="batchShowText" checked /> <span data-i18n="labelBatchShowText">Show labels</span></label>
+        <label for="skipCountInput" data-i18n="labelSkipCells" style="font-size:0.82rem;margin-inline-start:8px;">Skip used stickers:</label>
+        <input type="number" id="skipCountInput" class="ltr-code" min="0" max="39" value="0" style="width:68px;padding:6px 8px;border:1px solid var(--border-strong);border-radius:4px;background:var(--bg-panel);color:var(--ink-primary);font-family:var(--font-mono);font-size:0.85rem;" />
       </div>
 
       <!-- Logo upload -->
@@ -1043,6 +1258,20 @@
       </div>
     </main>
   </div>
+
+  <footer class="studio-footer">
+    <div class="kbd-hint">
+      <span><kbd>Ctrl/⌘ + K</kbd> <span data-i18n="kbdFocus">Focus Input</span></span>
+      <span>·</span>
+      <span><kbd>Alt + L</kbd> <span data-i18n="kbdLang">Language</span></span>
+      <span>·</span>
+      <span><kbd>Alt + T</kbd> <span data-i18n="kbdTheme">Theme</span></span>
+    </div>
+    <div>
+      <a href="SPEC.md" style="color:var(--accent);text-decoration:none;margin-inline-end:12px;" data-i18n="footerSpec">📐 Technical Spec</a>
+      <a href="ROADMAP.md" style="color:var(--accent);text-decoration:none;" data-i18n="footerRoadmap">🗺️ Sprint Roadmap</a>
+    </div>
+  </footer>
 
   <!-- SheetJS (XLSX) loaded via CDN for Excel parsing -->
   <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
@@ -1811,7 +2040,18 @@
         toastCopyFail: "Clipboard image write unavailable",
         themeDarkBtn: "🌙 Dark",
         themeLightBtn: "☀️ Light",
-        langToggleLabel: "🌐 עברית"
+        langToggleLabel: "🌐 עברית",
+        btnUploadLogo: "Choose Logo",
+        btnLaserGuide: "Laser Guide",
+        labelSkipCells: "Skip used stickers:",
+        isoPassLabel: "✓ ISO Quiet Zone OK",
+        isoWarnLabel: "⚠ Narrow Quiet Zone (< 8px)",
+        skippedCellLabel: "Skipped",
+        kbdFocus: "Focus Input",
+        kbdLang: "Language",
+        kbdTheme: "Theme",
+        footerSpec: "📐 Technical Spec",
+        footerRoadmap: "🗺️ Sprint Roadmap"
       },
       he: {
         appTitle: "סטודיו לתוויות ברקוד",
@@ -1894,7 +2134,18 @@
         toastCopyFail: "העתקת תמונה ללוח אינה זמינה בדפדפן זה",
         themeDarkBtn: "🌙 מצב כהה",
         themeLightBtn: "☀️ מצב בהיר",
-        langToggleLabel: "🌐 English"
+        langToggleLabel: "🌐 English",
+        btnUploadLogo: "בחר לוגו",
+        btnLaserGuide: "קרן סורק",
+        labelSkipCells: "דלג על מדבקות משומשות:",
+        isoPassLabel: "✓ שוליים שקטים תקינים (ISO)",
+        isoWarnLabel: "⚠ שוליים שקטים צרים (< 8px)",
+        skippedCellLabel: "מדבקה מדולגת",
+        kbdFocus: "מיקוד בשדה",
+        kbdLang: "שפה",
+        kbdTheme: "ערכת נושא",
+        footerSpec: "📐 מפרט טכני",
+        footerRoadmap: "🗺️ מפת דרכים"
       }
     };
 
@@ -2032,6 +2283,61 @@
 
     const recentValues = ["4820019472", "0019485021", "BATCH-904-X"];
     let pendingFixAction = null;
+    const ZOOM_LEVELS = [1, 1.35, 1.75];
+    let currentZoomIdx = 0;
+    let laserScanlineActive = false;
+
+    const isoGradeBadge = document.getElementById("isoGradeBadge");
+    const scanLineToggleBtn = document.getElementById("scanLineToggleBtn");
+    const stageZoomBtn = document.getElementById("stageZoomBtn");
+    const stickerContainer = document.getElementById("stickerContainer");
+    const singleCustomText = document.getElementById("singleCustomText");
+    const singleTextPos = document.getElementById("singleTextPos");
+    const singleLogoBtn = document.getElementById("singleLogoBtn");
+    const singleLogoClearBtn = document.getElementById("singleLogoClearBtn");
+
+    function checkBarcodePrintability(margin, scale, sym) {
+      const dict = I18N[currentLang] || I18N.en;
+      const minQuietPx = sym === "QR" ? 8 : Math.max(8, Math.round(scale * 4));
+      const isOk = margin >= minQuietPx;
+      return {
+        ok: isOk,
+        minQuietPx,
+        label: isOk ? dict.isoPassLabel : dict.isoWarnLabel
+      };
+    }
+
+    function cycleStageZoom() {
+      currentZoomIdx = (currentZoomIdx + 1) % ZOOM_LEVELS.length;
+      const zoom = ZOOM_LEVELS[currentZoomIdx];
+      if (stickerContainer && stickerContainer.style) {
+        stickerContainer.style.transform = zoom === 1 ? "" : `scale(${zoom})`;
+      }
+      if (stageZoomBtn) {
+        stageZoomBtn.textContent = `🔍 ${Math.round(zoom * 100)}%`;
+      }
+      return zoom;
+    }
+
+    function toggleLaserScanline() {
+      laserScanlineActive = !laserScanlineActive;
+      if (stickerContainer && stickerContainer.classList) {
+        if (laserScanlineActive) stickerContainer.classList.add("scanline-on");
+        else stickerContainer.classList.remove("scanline-on");
+      }
+      if (scanLineToggleBtn && scanLineToggleBtn.classList) {
+        if (laserScanlineActive) scanLineToggleBtn.classList.add("active");
+        else scanLineToggleBtn.classList.remove("active");
+      }
+      return laserScanlineActive;
+    }
+
+    if (stageZoomBtn) {
+      stageZoomBtn.addEventListener("click", cycleStageZoom);
+    }
+    if (scanLineToggleBtn) {
+      scanLineToggleBtn.addEventListener("click", toggleLaserScanline);
+    }
 
     function showToast(msg) {
       els.statusToast.textContent = msg;
@@ -2066,6 +2372,15 @@
       els.barHeightVal.textContent = `${height} px`;
       els.quietZoneVal.textContent = `${margin} px`;
       els.fontSizeVal.textContent = `${fontPx} px`;
+
+      const grade = checkBarcodePrintability(margin, scale, els.symbology.value);
+      if (isoGradeBadge) {
+        isoGradeBadge.textContent = grade.label;
+        if (isoGradeBadge.classList) {
+          if (grade.ok) isoGradeBadge.classList.remove("warn");
+          else isoGradeBadge.classList.add("warn");
+        }
+      }
 
       const built = buildBarcodeSvgHtml(raw, els.symbology.value, scale, height, margin, fontPx, showLabel, currentLogoDataUrl, currentCustomText, currentCustomTextPos);
 
@@ -2240,19 +2555,47 @@
       if (document.getElementById("batch-tab").classList.contains("active")) refreshBatchSheet();
     });
 
-    // Custom sticker text
+    // Custom sticker text (synchronized between Single & Batch tabs)
     const customStickerText = document.getElementById("customStickerText");
     const customTextPosition = document.getElementById("customTextPosition");
+    const skipCountInput = document.getElementById("skipCountInput");
+
+    if (singleLogoBtn) {
+      singleLogoBtn.addEventListener("click", () => logoInput.click());
+    }
+    if (singleLogoClearBtn) {
+      singleLogoClearBtn.addEventListener("click", () => logoClearBtn.click());
+    }
+    if (singleCustomText) {
+      singleCustomText.addEventListener("input", () => {
+        currentCustomText = singleCustomText.value.trim();
+        customStickerText.value = singleCustomText.value;
+        renderBarcode();
+      });
+    }
+    if (singleTextPos) {
+      singleTextPos.addEventListener("change", () => {
+        currentCustomTextPos = singleTextPos.value;
+        customTextPosition.value = singleTextPos.value;
+        renderBarcode();
+      });
+    }
     customStickerText.addEventListener("input", () => {
       currentCustomText = customStickerText.value.trim();
+      if (singleCustomText) singleCustomText.value = customStickerText.value;
       if (document.getElementById("single-tab").classList.contains("active")) renderBarcode();
       if (document.getElementById("batch-tab").classList.contains("active")) refreshBatchSheet();
     });
     customTextPosition.addEventListener("change", () => {
       currentCustomTextPos = customTextPosition.value;
+      if (singleTextPos) singleTextPos.value = customTextPosition.value;
       if (document.getElementById("single-tab").classList.contains("active")) renderBarcode();
       if (document.getElementById("batch-tab").classList.contains("active")) refreshBatchSheet();
     });
+    if (skipCountInput) {
+      skipCountInput.addEventListener("input", refreshBatchSheet);
+      skipCountInput.addEventListener("change", refreshBatchSheet);
+    }
 
     function batchShowToast(msg) {
       batchStatusToast.textContent = msg;
@@ -2374,6 +2717,10 @@
 
       let errors = 0;
       const cells = [];
+      const skipCount = skipCountInput ? Math.max(0, Math.min(39, parseInt(skipCountInput.value, 10) || 0)) : 0;
+      for (let s = 0; s < skipCount; s++) {
+        cells.push({ skipped: true, val: (I18N[currentLang] || I18N.en).skippedCellLabel });
+      }
 
       batchValues.forEach(val => {
         const built = buildBarcodeSvgHtml(val, sym, scale, height, margin, fontPx, show, currentLogoDataUrl, currentCustomText, currentCustomTextPos);
@@ -2390,7 +2737,7 @@
 
       // Render
       stickerGrid.innerHTML = "";
-      if (cells.length === 0) {
+      if (batchValues.length === 0) {
         batchEmpty.style.display = "block";
         stickerSheet.style.display = "none";
         return;
@@ -2404,8 +2751,10 @@
 
       cells.forEach((cell, idx) => {
         const div = document.createElement("div");
-        div.className = "sticker-cell";
-        if (cell.error) {
+        div.className = cell.skipped ? "sticker-cell skipped" : "sticker-cell";
+        if (cell.skipped) {
+          div.innerHTML = `<span class="cell-label">${cell.val} #${idx + 1}</span>`;
+        } else if (cell.error) {
           div.innerHTML = `<span style="color:var(--danger);font-size:0.7rem;text-align:center;">${cell.error}</span><span class="cell-label">${cell.val}</span>`;
         } else {
           div.innerHTML = cell.svgHtml + `<span class="cell-label">${cell.val}</span>`;
@@ -2499,6 +2848,31 @@
     // Batch print
     batchPrint.addEventListener("click", () => { window.print(); });
 
+    function handleKeyboardShortcuts(e) {
+      if (!e || !e.key) return false;
+      const key = e.key.toLowerCase();
+      if ((e.ctrlKey || e.metaKey) && key === "k") {
+        if (e.preventDefault) e.preventDefault();
+        if (els && els.input) els.input.focus();
+        return "focus";
+      }
+      if (e.altKey && key === "l") {
+        if (e.preventDefault) e.preventDefault();
+        setLanguage(currentLang === "en" ? "he" : "en");
+        return "lang";
+      }
+      if (e.altKey && key === "t") {
+        if (e.preventDefault) e.preventDefault();
+        setTheme(currentTheme === "light" ? "dark" : "light");
+        return "theme";
+      }
+      return false;
+    }
+
+    if (document && document.addEventListener) {
+      document.addEventListener("keydown", handleKeyboardShortcuts);
+    }
+
     // Seed initial batch values
     batchTextarea.value = "4820019472\n0019485021\nBATCH-904-X";
     // Silence initial render — only show when tab is active
@@ -2569,6 +2943,10 @@
         setTheme,
         updateToolbarControls,
         // Single & Batch UI Controllers
+        checkBarcodePrintability,
+        cycleStageZoom,
+        toggleLaserScanline,
+        handleKeyboardShortcuts,
         showToast,
         renderHistory,
         renderBarcode,

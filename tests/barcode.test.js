@@ -23,14 +23,19 @@ function loadBarcodeApi() {
     const attrs = new Map();
     const children = [];
     const listeners = new Map();
+    let _innerHTML = "";
     return {
       id,
-      value: id === "barcodeInput" ? "4820019472" : (id === "symbologySelect" || id === "batchSymbology" ? "CODE128" : (id === "stickerFormat" ? "a4-3x8" : "2")),
+      value: id === "barcodeInput" ? "4820019472" : (id === "symbologySelect" || id === "batchSymbology" ? "CODE128" : (id === "stickerFormat" ? "a4-3x8" : (id === "skipCountInput" ? "0" : "2"))),
       checked: true,
       disabled: false,
       textContent: "",
       placeholder: "",
-      innerHTML: "",
+      get innerHTML() { return _innerHTML; },
+      set innerHTML(v) {
+        _innerHTML = String(v);
+        if (_innerHTML === "") children.length = 0;
+      },
       clientWidth: 220,
       clientHeight: 110,
       children,
@@ -116,6 +121,7 @@ function loadBarcodeApi() {
       querySelectorAll() {
         return [];
       },
+      addEventListener() {},
       createElement(tag) {
         return makeMockElement(tag);
       }
@@ -723,6 +729,41 @@ describe("UI Controllers, Batch Pipeline, File Parser, I18N (EN/HE) & Theme (Lig
     });
     assert.equal(elementsById.get("batchCount").textContent, 2);
     assert.match(elementsById.get("fileNameDisplay").textContent, /inventory\.xlsx \(2 values\)/);
+
+    // Test skipCountInput offset in refreshBatchSheet
+    elementsById.get("skipCountInput").value = "3";
+    api.refreshBatchSheet();
+    assert.equal(elementsById.get("stickerGrid").children.length, 2 + 3);
+    assert.equal(elementsById.get("stickerGrid").children[0].className, "sticker-cell skipped");
+    elementsById.get("skipCountInput").value = "0";
+  });
+
+  test("checkBarcodePrintability, cycleStageZoom, toggleLaserScanline, and handleKeyboardShortcuts enhance studio UX", () => {
+    const okGrade = api.checkBarcodePrintability(16, 2, "CODE128");
+    assert.equal(okGrade.ok, true);
+    assert.match(okGrade.label, /ISO/);
+
+    const warnGrade = api.checkBarcodePrintability(0, 3, "CODE128");
+    assert.equal(warnGrade.ok, false);
+
+    assert.equal(api.cycleStageZoom(), 1.35);
+    assert.equal(elementsById.get("stageZoomBtn").textContent, "🔍 135%");
+    assert.equal(api.cycleStageZoom(), 1.75);
+    assert.equal(api.cycleStageZoom(), 1);
+
+    assert.equal(api.toggleLaserScanline(), true);
+    assert.equal(elementsById.get("stickerContainer").classList.contains("scanline-on"), true);
+    assert.equal(api.toggleLaserScanline(), false);
+
+    assert.equal(api.handleKeyboardShortcuts({ ctrlKey: true, key: "k" }), "focus");
+    assert.equal(api.handleKeyboardShortcuts({ altKey: true, key: "l" }), "lang");
+    assert.equal(api.getLanguage(), "he");
+    assert.equal(api.handleKeyboardShortcuts({ altKey: true, key: "l" }), "lang");
+    assert.equal(api.getLanguage(), "en");
+    assert.equal(api.handleKeyboardShortcuts({ altKey: true, key: "t" }), "theme");
+    assert.equal(api.getTheme(), "dark");
+    assert.equal(api.handleKeyboardShortcuts({ altKey: true, key: "t" }), "theme");
+    assert.equal(api.getTheme(), "light");
   });
 });
 
