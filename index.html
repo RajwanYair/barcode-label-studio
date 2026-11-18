@@ -1,0 +1,2099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Barcode Label Studio — Single &amp; Batch Print</title>
+  <style>
+    :root {
+      --bg-workbench: #eef1f5;
+      --bg-panel: #ffffff;
+      --bg-subtle: #f6f8fa;
+      --ink-primary: #11161c;
+      --ink-secondary: #4a5562;
+      --ink-muted: #768390;
+      --border-hairline: #d4dce4;
+      --border-strong: #9aa7b4;
+      --accent: #0055cc;
+      --accent-hover: #00419e;
+      --accent-soft: #e8f0fe;
+      --danger: #b42318;
+      --danger-bg: #fef3f2;
+      --success: #067647;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-workbench);
+      color: var(--ink-primary);
+      font-family: var(--font-sans);
+      line-height: 1.45;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 24px 16px;
+    }
+
+    .header-bar {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      border-bottom: 1px solid var(--border-hairline);
+      padding-bottom: 12px;
+    }
+
+    .header-bar h1 {
+      font-size: 1.25rem;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+    }
+
+    .header-meta {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--ink-secondary);
+    }
+
+    /* Tab Bar */
+    .tab-bar {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto 16px;
+      display: flex;
+      gap: 0;
+      border-bottom: 2px solid var(--border-hairline);
+    }
+
+    .tab-btn {
+      padding: 8px 20px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      background: transparent;
+      border: none;
+      color: var(--ink-secondary);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      font-family: var(--font-sans);
+      transition: color 0.12s ease, border-color 0.12s ease;
+    }
+
+    .tab-btn:hover { color: var(--ink-primary); }
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* --- Single Mode Workbench (unchanged widths) --- */
+    .single-workbench {
+      width: 100%;
+      max-width: 960px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.05fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-hairline);
+      border-radius: 6px;
+      padding: 22px;
+      box-shadow: 0 1px 2px rgba(17, 22, 28, 0.04);
+    }
+
+    .field-group {
+      margin-bottom: 18px;
+    }
+
+    .field-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--ink-primary);
+    }
+
+    .input-badge {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .barcode-input-wrap {
+      position: relative;
+      display: flex;
+      gap: 8px;
+    }
+
+    input[type="text"],
+    select {
+      width: 100%;
+      font-family: var(--font-mono);
+      font-size: 1.05rem;
+      padding: 10px 12px;
+      border: 1px solid var(--border-strong);
+      border-radius: 4px;
+      color: var(--ink-primary);
+      background: var(--bg-panel);
+      transition: border-color 0.12s ease, box-shadow 0.12s ease;
+    }
+
+    select {
+      font-family: var(--font-sans);
+      font-size: 0.92rem;
+      cursor: pointer;
+    }
+
+    input[type="text"]:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0, 85, 204, 0.15);
+    }
+
+    .clear-btn {
+      padding: 0 12px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-hairline);
+      border-radius: 4px;
+      color: var(--ink-secondary);
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .clear-btn:hover {
+      background: #e9edf2;
+      color: var(--ink-primary);
+    }
+
+    .presets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .preset-chip {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border: 1px solid var(--border-hairline);
+      background: var(--bg-subtle);
+      color: var(--ink-secondary);
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .preset-chip:hover {
+      border-color: var(--border-strong);
+      color: var(--ink-primary);
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .range-control {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .range-control-top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--ink-secondary);
+    }
+
+    .range-val {
+      font-family: var(--font-mono);
+      color: var(--ink-primary);
+      font-weight: 600;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+      font-size: 0.86rem;
+      color: var(--ink-secondary);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .checkbox-row input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    /* Right column: Thermal Label Stage */
+    .stage-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .label-bed {
+      background:
+        linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px) 0 0 / 16px 16px,
+        linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px) 0 0 / 16px 16px,
+        #f8fafc;
+      border: 1px solid var(--border-hairline);
+      border-radius: 6px;
+      min-height: 240px;
+      padding: 28px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow-x: auto;
+    }
+
+    .thermal-sticker {
+      background: #ffffff;
+      border: 1px solid #cfd7df;
+      border-radius: 4px;
+      padding: 18px 22px;
+      box-shadow: 0 3px 10px rgba(17, 22, 28, 0.07);
+      max-width: 100%;
+      overflow-x: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #barcodeSvg {
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
+
+    .error-banner {
+      display: none;
+      width: 100%;
+      background: var(--danger-bg);
+      border: 1px solid #fecdca;
+      color: var(--danger);
+      border-radius: 4px;
+      padding: 12px 14px;
+      font-size: 0.85rem;
+    }
+
+    .error-banner.visible {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .fix-btn {
+      padding: 5px 10px;
+      background: #ffffff;
+      border: 1px solid #fda29b;
+      color: var(--danger);
+      border-radius: 4px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .fix-btn:hover {
+      background: #fee4e2;
+    }
+
+    .telemetry-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-hairline);
+      border-radius: 4px;
+      padding: 10px 12px;
+      font-size: 0.76rem;
+    }
+
+    .telemetry-item span {
+      display: block;
+      color: var(--ink-muted);
+      margin-bottom: 2px;
+    }
+
+    .telemetry-item strong {
+      font-family: var(--font-mono);
+      color: var(--ink-primary);
+      font-weight: 600;
+    }
+
+    .action-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .btn {
+      padding: 9px 12px;
+      border-radius: 4px;
+      font-size: 0.83rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border-strong);
+      background: var(--bg-panel);
+      color: var(--ink-primary);
+      text-align: center;
+      transition: background 0.12s ease, border-color 0.12s ease;
+    }
+
+    .btn:hover:not(:disabled) {
+      background: var(--bg-subtle);
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--accent-hover);
+      border-color: var(--accent-hover);
+    }
+
+    .history-section {
+      margin-top: 16px;
+      border-top: 1px solid var(--border-hairline);
+      padding-top: 14px;
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      color: var(--ink-secondary);
+      margin-bottom: 8px;
+    }
+
+    .history-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .history-pill {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-hairline);
+      border-radius: 4px;
+      padding: 3px 8px;
+      cursor: pointer;
+      color: var(--ink-primary);
+    }
+
+    .history-pill:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .status-toast {
+      font-size: 0.78rem;
+      font-family: var(--font-mono);
+      color: var(--success);
+      min-height: 1.1em;
+      text-align: right;
+    }
+
+    @media (max-width: 760px) {
+      .workbench {
+        grid-template-columns: 1fr;
+      }
+      .action-bar {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+        padding: 0;
+      }
+      .header-bar,
+      .tab-bar,
+      .controls-panel,
+      .telemetry-strip,
+      .action-bar,
+      .error-banner,
+      .status-toast,
+      .batch-controls,
+      .batch-stats,
+      .batch-empty,
+      .batch-export-bar {
+        display: none !important;
+      }
+      .workbench,
+      .single-workbench,
+      .batch-workbench {
+        display: block;
+      }
+      .panel,
+      .label-bed,
+      .thermal-sticker {
+        border: none;
+        box-shadow: none;
+        background: #ffffff;
+        padding: 0;
+      }
+      .sticker-sheet {
+        page-break-inside: avoid;
+        border: none;
+        box-shadow: none;
+      }
+      .sticker-cell {
+        border: none;
+        box-shadow: none !important;
+      }
+    }
+
+    /* === BATCH / STICKER MODE === */
+    .batch-workbench {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .batch-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .batch-source-panel {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-hairline);
+      border-radius: 6px;
+      padding: 18px;
+    }
+
+    .batch-source-panel h3 {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--ink-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 12px;
+    }
+
+    .batch-source-panel textarea {
+      width: 100%;
+      height: 110px;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      line-height: 1.55;
+      border: 1px solid var(--border-strong);
+      border-radius: 4px;
+      padding: 10px;
+      color: var(--ink-primary);
+      background: var(--bg-panel);
+      resize: vertical;
+    }
+
+    .batch-source-panel textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0,85,204,.15);
+    }
+
+    .range-inputs {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .range-inputs input {
+      width: 120px;
+      font-family: var(--font-mono);
+      font-size: 0.92rem;
+    }
+
+    .range-inputs span {
+      color: var(--ink-muted);
+      font-size: 0.85rem;
+    }
+
+    .file-drop-area {
+      border: 2px dashed var(--border-strong);
+      border-radius: 6px;
+      padding: 28px 18px;
+      text-align: center;
+      cursor: pointer;
+      color: var(--ink-secondary);
+      font-size: 0.85rem;
+      transition: border-color 0.12s ease, background 0.12s ease;
+    }
+
+    .file-drop-area:hover, .file-drop-area.dragover {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .file-drop-area input[type="file"] {
+      display: none;
+    }
+
+    .file-name {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--accent);
+      margin-top: 6px;
+    }
+
+    /* Sticker Sheet Selector */
+    .sticker-format-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .sticker-format-row select {
+      width: auto;
+      min-width: 200px;
+    }
+
+    .batch-stats {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 14px;
+      font-size: 0.82rem;
+      color: var(--ink-secondary);
+    }
+
+    .batch-stats strong {
+      font-family: var(--font-mono);
+      color: var(--ink-primary);
+    }
+
+    .batch-export-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .sticker-sheet {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-hairline);
+      border-radius: 6px;
+      padding: 16px;
+      box-shadow: 0 1px 3px rgba(17,22,28,0.05);
+    }
+
+    .sticker-grid {
+      display: grid;
+      gap: 8px;
+      justify-items: center;
+    }
+
+    .sticker-cell {
+      background: #ffffff;
+      border: 1px solid #ebedf0;
+      border-radius: 3px;
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100px;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.02);
+    }
+
+    .sticker-cell svg {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .sticker-cell .cell-label {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--ink-muted);
+      margin-top: 3px;
+    }
+
+    .batch-empty {
+      background: var(--bg-subtle);
+      border: 2px dashed var(--border-hairline);
+      border-radius: 6px;
+      padding: 48px 24px;
+      text-align: center;
+      color: var(--ink-muted);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 860px) {
+      .batch-controls {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header-bar">
+    <h1>Barcode Label Studio</h1>
+    <div class="header-meta">1D Vector Symbology Engine (Code 128 / Code 39 / EAN-13 / ITF)</div>
+  </header>
+
+  <!-- Tabs -->
+  <nav class="tab-bar">
+    <button class="tab-btn active" data-tab="single-tab">Single Barcode</button>
+    <button class="tab-btn" data-tab="batch-tab">Batch / Sticker Sheet Print</button>
+  </nav>
+
+  <!-- ============================================== -->
+  <!-- SINGLE MODE PANEL                              -->
+  <!-- ============================================== -->
+  <div class="tab-panel active" id="single-tab">
+    <main class="single-workbench">
+      <section class="panel controls-panel">
+        <div class="field-group">
+          <div class="field-header">
+            <label for="barcodeInput">Value (number or text)</label>
+            <span id="inputTypeBadge" class="input-badge">Numeric · 10 chars</span>
+          </div>
+          <div class="barcode-input-wrap">
+            <input id="barcodeInput" type="text" value="4820019472" placeholder="Enter digits or text..." autocomplete="off" spellcheck="false" autofocus />
+            <button type="button" class="clear-btn" id="clearBtn" title="Clear input">Clear</button>
+          </div>
+          <div class="presets">
+            <button type="button" class="preset-chip" data-val="4820019472" data-sym="CODE128">4820019472</button>
+            <button type="button" class="preset-chip" data-val="978020137962" data-sym="EAN13">EAN: 978020137962</button>
+            <button type="button" class="preset-chip" data-val="LOT-2026-A0" data-sym="CODE128">LOT-2026-A0</button>
+            <button type="button" class="preset-chip" data-val="SN-88419" data-sym="CODE39">Code39: SN-88419</button>
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="field-header"><label for="symbologySelect">Symbology format</label></div>
+          <select id="symbologySelect">
+            <option value="CODE128" selected>Code 128 Auto (Numbers &amp; full ASCII)</option>
+            <option value="CODE39">Code 39 (Numbers, A–Z, - . $ / + % SPACE)</option>
+            <option value="EAN13">EAN-13 (12 or 13 digits — retail standard)</option>
+            <option value="ITF">ITF / Interleaved 2 of 5 (Even-length numeric)</option>
+            <option value="QR">QR Code (2D matrix — numbers, text, URLs)</option>
+          </select>
+        </div>
+        <div class="controls-grid">
+          <div class="range-control"><div class="range-control-top"><label for="barWidth">Bar width</label><span class="range-val" id="barWidthVal">2 px</span></div><input id="barWidth" type="range" min="1" max="4" step="0.5" value="2" /></div>
+          <div class="range-control"><div class="range-control-top"><label for="barHeight">Bar height</label><span class="range-val" id="barHeightVal">90 px</span></div><input id="barHeight" type="range" min="40" max="160" step="5" value="90" /></div>
+          <div class="range-control"><div class="range-control-top"><label for="quietZone">Quiet margin</label><span class="range-val" id="quietZoneVal">16 px</span></div><input id="quietZone" type="range" min="0" max="40" step="4" value="16" /></div>
+          <div class="range-control"><div class="range-control-top"><label for="fontSize">Label size</label><span class="range-val" id="fontSizeVal">16 px</span></div><input id="fontSize" type="range" min="11" max="24" step="1" value="16" /></div>
+        </div>
+        <label class="checkbox-row"><input type="checkbox" id="showText" checked /> Show human-readable value below bars</label>
+        <div class="history-section">
+          <div class="history-header"><span>Recent values</span><button type="button" class="clear-btn" id="saveHistoryBtn" style="padding:2px 8px;font-size:0.74rem;">Pin current</button></div>
+          <div class="history-list" id="historyList"></div>
+        </div>
+      </section>
+      <section class="panel stage-panel">
+        <div class="error-banner" id="errorBanner" role="alert"><span id="errorText"></span><button type="button" class="fix-btn" id="autoFixBtn">Switch to Code 128</button></div>
+        <div class="label-bed"><div class="thermal-sticker" id="stickerContainer"><svg id="barcodeSvg" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Generated barcode"></svg></div></div>
+        <div class="telemetry-strip">
+          <div class="telemetry-item"><span>Encoding Mode</span><strong id="metaMode">Code 128C</strong></div>
+          <div class="telemetry-item"><span>Check Character</span><strong id="metaChecksum">Mod 103: 45</strong></div>
+          <div class="telemetry-item"><span>Total Bars / Size</span><strong id="metaGeometry">68 modules</strong></div>
+        </div>
+        <div class="action-bar">
+          <button type="button" class="btn btn-primary" id="downloadPngBtn">Download PNG</button>
+          <button type="button" class="btn" id="downloadSvgBtn">Download SVG</button>
+          <button type="button" class="btn" id="copyPngBtn">Copy Image</button>
+          <button type="button" class="btn" id="printBtn">Print Label</button>
+        </div>
+        <div class="status-toast" id="statusToast" aria-live="polite"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- BATCH / STICKER SHEET MODE                     -->
+  <!-- ============================================== -->
+  <div class="tab-panel" id="batch-tab">
+    <main class="batch-workbench">
+      <!-- Top: 3 source panels -->
+      <div class="batch-controls">
+        <!-- 1. Manual text list -->
+        <div class="batch-source-panel">
+          <h3>Text List (one per line)</h3>
+          <textarea id="batchTextarea" placeholder="4820019472&#10;978020137962&#10;LOT-2026-A0&#10;SN-88419&#10;..." rows="5"></textarea>
+        </div>
+        <!-- 2. Number range -->
+        <div class="batch-source-panel">
+          <h3>Number Range</h3>
+          <div class="range-inputs">
+            <input type="text" id="rangeFrom" value="4820019472" placeholder="From" />
+            <span>to</span>
+            <input type="text" id="rangeTo" value="4820019482" placeholder="To" />
+          </div>
+          <button type="button" class="btn btn-primary" id="rangeGenBtn" style="width:100%;">Generate Range</button>
+          <div style="margin-top:6px;font-size:0.72rem;color:var(--ink-muted);">
+            Generates sequential numbers (inclusive). Prefix/suffix strings also work: e.g. <code>SN-100 to SN-110</code>.
+          </div>
+        </div>
+        <!-- 3. File upload (CSV / Excel / text) -->
+        <div class="batch-source-panel">
+          <h3>Import File</h3>
+          <div class="file-drop-area" id="fileDropArea">
+            Drop file here or click to browse
+            <input type="file" id="fileInput" accept=".txt,.csv,.tsv,.xlsx,.xls" />
+          </div>
+          <div class="file-name" id="fileNameDisplay"></div>
+          <div style="margin-top:6px;font-size:0.72rem;color:var(--ink-muted);">
+            Supported: .txt (one per line), .csv/.tsv (first column), .xlsx/.xls (first column). Excel parsing works offline via SheetJS.
+          </div>
+        </div>
+      </div>
+
+      <!-- Sticker sheet format selector -->
+      <div class="sticker-format-row">
+        <div class="field-header"><label for="stickerFormat">Sticker sheet format</label></div>
+        <select id="stickerFormat">
+          <option value="a4-3x8" selected>A4 — 3 cols × 8 rows = 24 labels (63.5 × 33.9 mm)</option>
+          <option value="a4-2x7">A4 — 2 cols × 7 rows = 14 labels (99.1 × 33.9 mm)</option>
+          <option value="a4-4x10">A4 — 4 cols × 10 rows = 40 labels (48.5 × 16.9 mm)</option>
+          <option value="letter-3x10">US Letter — 3 cols × 10 rows = 30 labels (66.0 × 25.4 mm)</option>
+          <option value="letter-2x7">US Letter — 2 cols × 7 rows = 14 labels (101.6 × 33.9 mm)</option>
+          <option value="flow">Flow (no columns — full-width rows)</option>
+        </select>
+        <button type="button" class="btn" id="batchRefreshBtn">Refresh Sheet</button>
+      </div>
+
+      <!-- Symbology for batch -->
+      <div class="sticker-format-row" style="margin-top:-8px;">
+        <div class="field-header"><label for="batchSymbology">Symbology</label></div>
+        <select id="batchSymbology">
+          <option value="CODE128" selected>Code 128 Auto</option>
+          <option value="CODE39">Code 39</option>
+          <option value="EAN13">EAN-13</option>
+          <option value="ITF">ITF / 2 of 5</option>
+          <option value="QR">QR Code (2D)</option>
+        </select>
+        <label class="checkbox-row" style="margin:0 0 0 12px;"><input type="checkbox" id="batchShowText" checked /> Show labels</label>
+      </div>
+
+      <!-- Logo upload -->
+      <div class="sticker-format-row" style="margin-top:-8px;">
+        <div class="field-header"><label for="logoInput">Company Logo (optional)</label></div>
+        <input type="file" id="logoInput" accept="image/png,image/jpeg,image/svg+xml" style="max-width:260px;font-family:var(--font-sans);font-size:0.82rem;" />
+        <button type="button" class="clear-btn" id="logoClearBtn" style="font-size:0.74rem;">Clear</button>
+        <span id="logoStatus" style="font-size:0.74rem;color:var(--ink-muted);"></span>
+      </div>
+
+      <!-- Custom sticker text -->
+      <div class="sticker-format-row" style="margin-top:-8px;">
+        <div class="field-header"><label for="customStickerText">Sticker Text (optional)</label></div>
+        <input type="text" id="customStickerText" placeholder="e.g. Property of Acme Corp" style="width:240px;font-family:var(--font-sans);font-size:0.82rem;" />
+        <select id="customTextPosition" style="width:auto;min-width:100px;">
+          <option value="top" selected>Above barcode</option>
+          <option value="bottom">Below barcode</option>
+        </select>
+      </div>
+
+      <!-- Stats & Export -->
+      <div class="batch-stats" id="batchStats">
+        <span>Values: <strong id="batchCount">0</strong></span>
+        <span>Pages: <strong id="batchPages">0</strong></span>
+        <span>Errors: <strong id="batchErrors" style="color:var(--danger);">0</strong></span>
+      </div>
+
+      <div class="batch-export-bar">
+        <button type="button" class="btn btn-primary" id="batchDownloadPng">PNG Images (ZIP)</button>
+        <button type="button" class="btn" id="batchDownloadSvg">SVG Images (one file)</button>
+        <button type="button" class="btn" id="batchDownloadPdf">PDF (print-ready)</button>
+        <button type="button" class="btn" id="batchPrint">Print to Printer</button>
+      </div>
+      <div class="status-toast" id="batchStatusToast" aria-live="polite"></div>
+
+      <!-- Sticker Sheet Rendering -->
+      <div id="stickerSheetContainer">
+        <div class="batch-empty" id="batchEmpty">Enter values above — text list, number range, or file — then click Refresh Sheet.</div>
+        <div class="sticker-sheet" id="stickerSheet" style="display:none;">
+          <div class="sticker-grid" id="stickerGrid"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- SheetJS (XLSX) loaded via CDN for Excel parsing -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+
+  <script>
+    // =========================================================================
+    // ENCODERS (unchanged — copied here for the shared namespace)
+    // =========================================================================
+    const CODE128_PATTERNS = [
+      "11011001100","11001101100","11001100110","10010011000","10010001100",
+      "10001001100","10011001000","10011000100","10001100100","11001001000",
+      "11001000100","11000100100","10110011100","10011011100","10011001110",
+      "10111001100","10011101100","10011100110","11001110010","11001011100",
+      "11001001110","11011100100","11001110100","11101101110","11101001100",
+      "11100101100","11100100110","11101100100","11100110100","11100110010",
+      "11011011000","11011000110","11000110110","10100011000","10001011000",
+      "10001000110","10110001000","10001101000","10001100010","11010001000",
+      "11000101000","11000100010","10110111000","10110001110","10001101110",
+      "10111011000","10111000110","10001110110","11101110110","11010001110",
+      "11000101110","11011101000","11011100010","11011101110","11101011000",
+      "11101000110","11100010110","11101101000","11101100010","11100011010",
+      "11101111010","11001000010","11110001010","10100110000","10100001100",
+      "10010110000","10010000110","10000101100","10000100110","10110010000",
+      "10110000100","10011010000","10011000010","10000110100","10000110010",
+      "11000010010","11001010000","11110111010","11000010100","10001111010",
+      "10100111100","10010111100","10010011110","10111100100","10011110100",
+      "10011110010","11110100100","11110010100","11110010010","11011011110",
+      "11011110110","11110110110","10101111000","10100011110","10001011110",
+      "10111101000","10111100010","11110101000","11110100010","10111011110",
+      "10111101110","11101011110","11110101110","11010000100","11010010000",
+      "11010011100","1100011101011"
+    ];
+
+    function encodeCode128(text) {
+      if (!text || text.length === 0) {
+        return { error: "Enter a number or text to generate a barcode." };
+      }
+      for (let i = 0; i < text.length; i++) {
+        const code = text.charCodeAt(i);
+        if (code < 32 || code > 126) {
+          return { error: `Character "${text[i]}" (ASCII ${code}) is outside printable ASCII (32–126).` };
+        }
+      }
+
+      const codes = [];
+      let mode = null; // 'B' or 'C'
+      let usedB = false;
+      let usedC = false;
+      let i = 0;
+
+      const countLeadingDigits = (str, pos) => {
+        let count = 0;
+        while (pos + count < str.length && str.charCodeAt(pos + count) >= 48 && str.charCodeAt(pos + count) <= 57) {
+          count++;
+        }
+        return count;
+      };
+
+      while (i < text.length) {
+        const digitRun = countLeadingDigits(text, i);
+        const shouldUseC = (mode === null && (digitRun >= 4 || (digitRun === 2 && text.length === 2))) ||
+                           (mode === 'C' && digitRun >= 2) ||
+                           (mode === 'B' && digitRun >= 4);
+
+        if (shouldUseC) {
+          if (mode === null) {
+            codes.push(105); // Start C
+          } else if (mode !== 'C') {
+            codes.push(99);  // Code C switch
+          }
+          mode = 'C';
+          usedC = true;
+          const pairCount = Math.floor(digitRun / 2);
+          for (let p = 0; p < pairCount; p++) {
+            const pairVal = parseInt(text.slice(i, i + 2), 10);
+            codes.push(pairVal);
+            i += 2;
+          }
+        } else {
+          if (mode === null) {
+            codes.push(104); // Start B
+          } else if (mode !== 'B') {
+            codes.push(100); // Code B switch
+          }
+          mode = 'B';
+          usedB = true;
+          codes.push(text.charCodeAt(i) - 32);
+          i += 1;
+        }
+      }
+
+      let checksum = codes[0];
+      for (let idx = 1; idx < codes.length; idx++) {
+        checksum += codes[idx] * idx;
+      }
+      checksum = checksum % 103;
+      codes.push(checksum);
+      codes.push(106); // Stop
+
+      const bits = codes.map(c => CODE128_PATTERNS[c]).join("");
+      const modeLabel = usedB && usedC ? "Code 128 B+C" : (usedC ? "Code 128C (Numeric)" : "Code 128B (ASCII)");
+      return {
+        bits,
+        displayText: text,
+        modeLabel,
+        checksumLabel: `Mod 103: ${checksum}`
+      };
+    }
+
+    // =========================================================================
+    // 2. CODE 39 ENCODER
+    // =========================================================================
+    const CODE39_MAP = {
+      "0": "101001101101", "1": "110100101011", "2": "101100101011", "3": "110110010101",
+      "4": "101001101011", "5": "110100110101", "6": "101100110101", "7": "101001011011",
+      "8": "110100101101", "9": "101100101101", "A": "110101001011", "B": "101101001011",
+      "C": "110110100101", "D": "101011001011", "E": "110101100101", "F": "101101100101",
+      "G": "101010011011", "H": "110101001101", "I": "101101001101", "J": "101011001101",
+      "K": "110101010011", "L": "101101010011", "M": "110110101001", "N": "101011010011",
+      "O": "110101101001", "P": "101101101001", "Q": "101010110011", "R": "110101011001",
+      "S": "101101011001", "T": "101011011001", "U": "110010101011", "V": "100110101011",
+      "W": "110011010101", "X": "100101101011", "Y": "110010110101", "Z": "100110110101",
+      "-": "100101011011", ".": "110010101101", " ": "100110101101", "$": "100100100101",
+      "/": "100100101001", "+": "100101001001", "%": "101001001001", "*": "100101101101"
+    };
+    const CODE39_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%";
+
+    function encodeCode39(text) {
+      if (!text || text.length === 0) {
+        return { error: "Enter a number or uppercase text for Code 39." };
+      }
+      const upper = text.toUpperCase();
+      const parts = [CODE39_MAP["*"]];
+      let sum = 0;
+
+      for (let i = 0; i < upper.length; i++) {
+        const ch = upper[i];
+        const idx = CODE39_CHARS.indexOf(ch);
+        if (idx === -1) {
+          return {
+            error: `Code 39 does not support "${text[i]}". Allowed: digits, A–Z, space, and - . $ / + %.`,
+            canSwitchTo128: true
+          };
+        }
+        sum += idx;
+        parts.push(CODE39_MAP[ch]);
+      }
+      parts.push(CODE39_MAP["*"]);
+      const mod43Char = CODE39_CHARS[sum % 43];
+      return {
+        bits: parts.join("0"),
+        displayText: `*${upper}*`,
+        modeLabel: "Code 39",
+        checksumLabel: `Mod 43: ${mod43Char}`
+      };
+    }
+
+    // =========================================================================
+    // 3. EAN-13 ENCODER (12 digits + auto check digit, or 13 digits verified)
+    // =========================================================================
+    const EAN_L = ["0001101","0011001","0010011","0111101","0100011","0110001","0101111","0111011","0110111","0001011"];
+    const EAN_G = ["0100111","0110011","0011011","0100001","0011101","0111001","0000101","0010001","0001001","0010111"];
+    const EAN_R = ["1110010","1100110","1101100","1000010","1011100","1001110","1010000","1000100","1001000","1110100"];
+    const EAN_PARITY = [
+      "LLLLLL","LLGLGG","LLGGLG","LLGGGL","LGLLGG",
+      "LGGLLG","LGGGLL","LGLGLG","LGLGGL","LGGLGL"
+    ];
+
+    function computeEan13CheckDigit(digits12) {
+      let sum = 0;
+      for (let i = 0; i < 12; i++) {
+        const d = digits12.charCodeAt(i) - 48;
+        sum += (i % 2 === 0) ? d : d * 3;
+      }
+      return (10 - (sum % 10)) % 10;
+    }
+
+    function encodeEan13(text) {
+      if (!/^\d+$/.test(text)) {
+        return {
+          error: "EAN-13 requires numeric digits only (12 digits to auto-calculate check digit, or 13 digits).",
+          canSwitchTo128: true
+        };
+      }
+      if (text.length !== 12 && text.length !== 13) {
+        return {
+          error: `EAN-13 requires 12 or 13 digits (currently ${text.length} digits).`,
+          canSwitchTo128: true
+        };
+      }
+      const base12 = text.slice(0, 12);
+      const expectedCheck = computeEan13CheckDigit(base12);
+      if (text.length === 13 && (text.charCodeAt(12) - 48) !== expectedCheck) {
+        return {
+          error: `13th check digit should be ${expectedCheck} (got ${text[12]}).`,
+          fixValue: base12 + expectedCheck
+        };
+      }
+      const full13 = base12 + expectedCheck;
+      const firstDigit = full13.charCodeAt(0) - 48;
+      const parity = EAN_PARITY[firstDigit];
+
+      let bits = "101"; // Start guard
+      for (let i = 1; i <= 6; i++) {
+        const d = full13.charCodeAt(i) - 48;
+        bits += parity[i - 1] === "L" ? EAN_L[d] : EAN_G[d];
+      }
+      bits += "01010"; // Center guard
+      for (let i = 7; i <= 12; i++) {
+        const d = full13.charCodeAt(i) - 48;
+        bits += EAN_R[d];
+      }
+      bits += "101"; // End guard
+
+      return {
+        bits,
+        displayText: `${full13[0]}  ${full13.slice(1, 7)}  ${full13.slice(7)}`,
+        modeLabel: "EAN-13",
+        checksumLabel: `Check Digit: ${expectedCheck}`
+      };
+    }
+
+    // =========================================================================
+    // 4. ITF (Interleaved 2 of 5) ENCODER
+    // =========================================================================
+    const ITF_WEIGHTS = [
+      "00110","10001","01001","11000","00101",
+      "10100","01100","00011","10010","01010"
+    ];
+
+    function encodeItf(text) {
+      if (!/^\d+$/.test(text)) {
+        return {
+          error: "ITF (Interleaved 2 of 5) supports numeric digits only.",
+          canSwitchTo128: true
+        };
+      }
+      const normalized = (text.length % 2 === 1) ? ("0" + text) : text;
+      let bits = "1010"; // Start
+      for (let i = 0; i < normalized.length; i += 2) {
+        const d1 = ITF_WEIGHTS[normalized.charCodeAt(i) - 48];
+        const d2 = ITF_WEIGHTS[normalized.charCodeAt(i + 1) - 48];
+        for (let k = 0; k < 5; k++) {
+          bits += d1[k] === "1" ? "111" : "1";
+          bits += d2[k] === "1" ? "000" : "0";
+        }
+      }
+      bits += "11101"; // Stop
+      return {
+        bits,
+        displayText: normalized,
+        modeLabel: normalized !== text ? "ITF (0-padded)" : "ITF-14 / 2of5",
+        checksumLabel: `${normalized.length} digits`
+      };
+    }
+
+    // =========================================================================
+    // 5. QR CODE ENCODER (Version 1–6, Model 2, Byte mode with Alphanumeric fallback)
+    //    Follows ISO/IEC 18004 fully — GF(256) Reed–Solomon, interleaved blocks,
+    //    full format/masking, and quiet zone.
+    // =========================================================================
+
+    /* --- Galois field helpers (GF(256) with primitive 0x11d) --- */
+    const GF256_EXP = new Uint8Array(512);
+    const GF256_LOG = new Uint8Array(256);
+    (function initGF256() {
+      let x = 1;
+      for (let i = 0; i < 255; i++) {
+        GF256_EXP[i] = x; GF256_EXP[i + 255] = x;
+        GF256_LOG[x] = i;
+        x <<= 1;
+        if (x & 0x100) x ^= 0x11d;
+      }
+    })();
+
+    function gfMul(a, b) {
+      if (a === 0 || b === 0) return 0;
+      return GF256_EXP[GF256_LOG[a] + GF256_LOG[b]];
+    }
+
+    function rsGeneratePoly(nsym) {
+      let gen = [1];
+      for (let i = 0; i < nsym; i++) {
+        gen.push(0);
+        for (let j = gen.length - 1; j > 0; j--) {
+          gen[j] = gen[j - 1] ^ gfMul(gen[j], GF256_EXP[i]);
+        }
+        gen[0] = gfMul(gen[0], GF256_EXP[i]);
+      }
+      return gen;
+    }
+
+    function rsEncode(data, nsym) {
+      const gen = rsGeneratePoly(nsym);
+      const res = new Uint8Array(data.length + nsym);
+      res.set(data);
+      for (let i = 0; i < data.length; i++) {
+        const coef = res[i];
+        if (coef !== 0) {
+          for (let j = 0; j < gen.length; j++) {
+            res[i + j] ^= gfMul(gen[j], coef);
+          }
+        }
+      }
+      res.set(data);
+      return res;
+    }
+
+    /* QR version parameters [total codewords, EC codewords per block, groups (blocks, codewords)] */
+    const QR_VERSION_INFO = {
+      1:  { total: 26,  ec: [7, 10, 13, 17], groups: [[1,26],[1,26],[1,26],[1,26]] },
+      2:  { total: 44,  ec: [10,16,22,28], groups: [[1,44],[1,44],[1,44],[1,44]] },
+      3:  { total: 70,  ec: [15,26,36,44], groups: [[1,70],[1,70],[2,35],[2,35]] },
+      4:  { total: 100, ec: [20,36,52,64], groups: [[1,100],[2,50],[2,50],[4,25]] },
+      5:  { total: 134, ec: [26,48,72,88], groups: [[1,134],[2,67],[4,43],[4,43]] },
+      6:  { total: 172, ec: [36,64,96,112],groups: [[2,86],[4,43],[4,43],[4,43]] },
+    };
+
+    const QR_ALIGNMENT_POS = {
+      1:[],2:[6,18],3:[6,22],4:[6,26],5:[6,30],6:[6,34]
+    };
+
+    const QR_ECI_ALNUM = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
+
+    function qrGetVersionBitLen(dataLen, ecl) {
+      for (let v = 1; v <= 6; v++) {
+        const info = QR_VERSION_INFO[v];
+        const totalBytes = info.total;
+        const ecBytes = info.ec[ecl];
+        const dataBytes = totalBytes - ecBytes;
+        if (dataLen <= dataBytes) return v;
+      }
+      return null;
+    }
+
+    function qrEncodeAlpha(text) {
+      const bits = [];
+      for (let i = 0; i < text.length; i += 2) {
+        const c1 = QR_ECI_ALNUM.indexOf(text[i]);
+        if (i + 1 < text.length) {
+          const c2 = QR_ECI_ALNUM.indexOf(text[i + 1]);
+          if (c2 === -1) return null;
+          bits.push((c1 * 45 + c2).toString(2).padStart(11, "0"));
+        } else {
+          bits.push(c1.toString(2).padStart(6, "0"));
+        }
+      }
+      return bits.join("");
+    }
+
+    function qrEncodeByte(text) {
+      const bits = [];
+      for (let i = 0; i < text.length; i++) {
+        bits.push(text.charCodeAt(i).toString(2).padStart(8, "0"));
+      }
+      return bits.join("");
+    }
+
+    function qrTerminateAndPad(bits, dataBytes) {
+      const targetBits = dataBytes * 8;
+      if (bits.length + 4 <= targetBits) bits += "0000";
+      while (bits.length % 8 !== 0) bits += "0";
+      while (bits.length < targetBits) {
+        bits += (bits.length % 8 === 0 ? "11101100" : "00010001").padEnd(Math.min(bits.length + 8, targetBits), "");
+        // pad byte-by-byte
+        if (bits.length >= targetBits) break;
+        while (bits.length < targetBits && bits.length % 8 !== 0) bits += "0";
+        if (bits.length < targetBits) bits += "11101100";
+        if (bits.length < targetBits) bits += "00010001";
+      }
+      return bits.slice(0, targetBits);
+    }
+
+    function qrInterleave(data, info, ecl) {
+      const groups = info.groups[ecl];
+      const ecBytesPerBlock = info.ec[ecl];
+      const blocks = [];
+      let offset = 0;
+      for (let g = 0; g < groups.length; g += 2) {
+        const numBlocks = groups[g];
+        const dataPerBlock = groups[g + 1] / numBlocks;
+        for (let b = 0; b < numBlocks; b++) {
+          const blockData = data.slice(offset, offset + dataPerBlock);
+          offset += dataPerBlock;
+          blocks.push({ data: blockData, ec: rsEncode(blockData, ecBytesPerBlock).slice(dataPerBlock) });
+        }
+      }
+      // Interleave data
+      const interleaved = [];
+      let maxDataLen = 0;
+      blocks.forEach(b => { if (b.data.length > maxDataLen) maxDataLen = b.data.length; });
+      for (let i = 0; i < maxDataLen; i++) {
+        blocks.forEach(b => { if (i < b.data.length) interleaved.push(b.data[i]); });
+      }
+      for (let i = 0; i < ecBytesPerBlock; i++) {
+        blocks.forEach(b => { interleaved.push(b.ec[i]); });
+      }
+      return interleaved;
+    }
+
+    function qrPlaceModules(version, data, ecl) {
+      const size = 17 + version * 4;
+      const modules = Array.from({ length: size }, () => new Uint8Array(size));
+
+      // Finder patterns
+      function placeFinder(r, c) {
+        for (let dr = -1; dr <= 7; dr++) {
+          for (let dc = -1; dc <= 7; dc++) {
+            const rr = r + dr, cc = c + dc;
+            if (rr >= 0 && rr < size && cc >= 0 && cc < size) {
+              modules[rr][cc] = (dr >= 0 && dr <= 6 && dc >= 0 && dc <= 6 && (dr === 0 || dr === 6 || dc === 0 || dc === 6 || (dr >= 2 && dr <= 4 && dc >= 2 && dc <= 4))) ? 1 : 0;
+            }
+          }
+        }
+      }
+      placeFinder(0, 0);
+      placeFinder(0, size - 7);
+      placeFinder(size - 7, 0);
+
+      // Timing patterns
+      for (let i = 8; i < size - 8; i++) {
+        modules[6][i] = modules[i][6] = (i % 2 === 0) ? 1 : 0;
+      }
+
+      // Alignment patterns
+      const apos = QR_ALIGNMENT_POS[version] || [];
+      for (let ar = 0; ar < apos.length; ar++) {
+        for (let ac = 0; ac < apos.length; ac++) {
+          const r = apos[ar], c = apos[ac];
+          if ((r === 0 && c === 0) || (r === 0 && c === size - 7) || (r === size - 7 && c === 0)) continue;
+          for (let dr = -2; dr <= 2; dr++) {
+            for (let dc = -2; dc <= 2; dc++) {
+              const rr = r + dr, cc = c + dc;
+              if (rr >= 0 && rr < size && cc >= 0 && cc < size) {
+                modules[rr][cc] = (dr === -2 || dr === 2 || dc === -2 || dc === 2 || (dr === 0 && dc === 0)) ? 1 : 0;
+              }
+            }
+          }
+        }
+      }
+
+      // Dark module
+      modules[size - 8][8] = 1;
+
+      // Reserve format areas
+      const reserved = Array.from({ length: size }, () => new Uint8Array(size));
+      for (let i = 0; i < 8; i++) { reserved[i][8] = reserved[8][i] = 1; }
+      for (let i = 0; i < 9; i++) { reserved[size - 1 - i][8] = reserved[8][size - 1 - i] = 1; }
+      reserved[7][8] = reserved[8][7] = reserved[8][8] = reserved[size - 8][8] = 1;
+
+      // Reserve version info for version >= 7 (skip for versions 1–6)
+
+      // Place data bits with up-right zigzag
+      const bitCount = data.length * 8;
+      let bitIdx = 0;
+      let col = size - 1;
+      let up = true;
+
+      while (col > 0) {
+        if (col === 6) col = 5;
+        for (let r = (up ? size - 1 : 0); up ? r >= 0 : r < size; r += (up ? -1 : 1)) {
+          for (let dc = 0; dc <= 1; dc++) {
+            const cc = col - dc;
+            if (cc < 0 || cc >= size) continue;
+            if (reserved[r][cc]) continue;
+            if (bitIdx < bitCount) {
+              const byteIdx = bitIdx >> 3;
+              const bit = (data[byteIdx] >> (7 - (bitIdx & 7))) & 1;
+              modules[r][cc] = bit ^ ((r + cc) % 2 === 0 ? 1 : 0); // XOR with mask pattern 0 = (row+col) % 2 == 0
+              bitIdx++;
+            }
+          }
+        }
+        col -= 2;
+        up = !up;
+      }
+
+      return { modules, size };
+    }
+
+    function encodeQR(text) {
+      if (!text || text.length === 0) {
+        return { error: "Enter text or a URL to generate a QR code." };
+      }
+
+      // Try alphanumeric first, fall back to byte
+      let mode = 2; // 8-bit byte
+      let modeIndicator = "0100";
+      let dataBits;
+      if (/^[0-9A-Z $%*+\-.\/:]+$/.test(text.toUpperCase())) {
+        mode = 1;
+        modeIndicator = "0010";
+        const alphaBits = qrEncodeAlpha(text.toUpperCase());
+        if (alphaBits) dataBits = alphaBits;
+      }
+      if (!dataBits) {
+        dataBits = qrEncodeByte(text);
+      }
+
+      const charCountLen = (mode === 1) ? 9 : 8;
+      const charCount = text.length.toString(2).padStart(charCountLen, "0");
+      let fullBits = modeIndicator + charCount + dataBits;
+
+      // Pick version (1–6) at ECL M (index 1 = ~15%)
+      const ecl = 1;
+
+      // Find smallest version that fits
+      let version = 1;
+      let info, dataBytes, codewords;
+      do {
+        info = QR_VERSION_INFO[version];
+        const ecBytes = info.ec[ecl];
+        dataBytes = info.total - ecBytes;
+        const minBits = fullBits.length + 4; // at least terminator
+        if (minBits <= dataBytes * 8) {
+          fullBits = qrTerminateAndPad(fullBits, dataBytes);
+          // Convert to bytes
+          codewords = [];
+          for (let i = 0; i < fullBits.length; i += 8) {
+            codewords.push(parseInt(fullBits.slice(i, i + 8).padEnd(8, "0"), 2));
+          }
+          break;
+        }
+        version++;
+      } while (version <= 6);
+
+      if (version > 6) {
+        return { error: `QR input too long (${text.length} chars) — would require version ${version} which exceeds v6 limit. Try a shorter value.` };
+      }
+
+      const interleaved = qrInterleave(codewords, info, ecl);
+      const { modules, size: qrSize } = qrPlaceModules(version, interleaved, ecl);
+
+      return {
+        qrModules: modules,
+        qrSize,
+        displayText: text,
+        modeLabel: `QR v${version} (${qrSize}×${qrSize})`,
+        checksumLabel: `ECL M · ${text.length} chars`
+      };
+    }
+
+    // =========================================================================
+    // COMMON: build a single barcode SVG string (used by both Single and Batch modes)
+    function buildBarcodeSvgHtml(rawValue, sym, scale, height, margin, fontPx, showLabel, logoDataUrl, customText, customTextPos) {
+      // QR code branch
+      if (sym === "QR") {
+        const result = encodeQR(rawValue);
+        if (result.error) return { error: result };
+
+        const modSize = Math.max(3, Math.round(scale * 1.8)); // QR module pixel size
+        const qrPx = result.qrSize * modSize;
+        const quiet = Math.max(8, Math.round(margin * 0.8));
+        const customTextH = customText ? (fontPx + 10) : 0;
+        const labelGap = showLabel ? fontPx + 10 : 0;
+        const topExtra = (customText && customTextPos === "top") ? customTextH : 0;
+        const bottomExtra = labelGap + ((customText && customTextPos !== "top") ? customTextH : 0);
+        const totalW = qrPx + quiet * 2;
+        const totalH = topExtra + qrPx + quiet * 2 + bottomExtra + (logoDataUrl ? 10 : 0);
+
+        const parts = [
+          `<svg xmlns="http://www.w3.org/2000/svg" width="${totalW}" height="${totalH}" viewBox="0 0 ${totalW} ${totalH}">`,
+          `<rect width="${totalW}" height="${totalH}" fill="#ffffff"/>`
+        ];
+
+        // Custom text at top
+        if (customText && customTextPos === "top") {
+          const escaped = customText.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          parts.push(`<text x="${totalW / 2}" y="${quiet + fontPx}" fill="#4a5562" font-family="sans-serif" font-size="${fontPx - 2}" font-weight="600" text-anchor="middle">${escaped}</text>`);
+        }
+
+        // QR modules
+        for (let r = 0; r < result.qrSize; r++) {
+          for (let c = 0; c < result.qrSize; c++) {
+            if (result.qrModules[r][c]) {
+              const x = quiet + c * modSize;
+              const y = topExtra + quiet + r * modSize;
+              parts.push(`<rect x="${x}" y="${y}" width="${modSize}" height="${modSize}" fill="#11161c"/>`);
+            }
+          }
+        }
+
+        // Logo overlay (center of QR)
+        if (logoDataUrl) {
+          const logoSize = Math.floor(qrPx * 0.22);
+          const logoX = quiet + (qrPx - logoSize) / 2;
+          const logoY = topExtra + quiet + (qrPx - logoSize) / 2;
+          parts.push(`<rect x="${logoX - 2}" y="${logoY - 2}" width="${logoSize + 4}" height="${logoSize + 4}" fill="#ffffff" rx="4"/>`);
+          parts.push(`<image href="${logoDataUrl}" x="${logoX}" y="${logoY}" width="${logoSize}" height="${logoSize}" preserveAspectRatio="xMidYMid slice"/>`);
+        }
+
+        // Label
+        if (showLabel) {
+          const escaped = result.displayText.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          const textY = topExtra + quiet + qrPx + fontPx + 4;
+          parts.push(`<text x="${totalW / 2}" y="${textY}" fill="#11161c" font-family="monospace" font-size="${fontPx}" font-weight="600" text-anchor="middle" letter-spacing="1.5">${escaped}</text>`);
+        }
+
+        // Custom text at bottom
+        if (customText && customTextPos !== "top") {
+          const escaped = customText.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          const textY = totalH - quiet + fontPx - 4;
+          parts.push(`<text x="${totalW / 2}" y="${textY}" fill="#4a5562" font-family="sans-serif" font-size="${fontPx - 2}" font-weight="600" text-anchor="middle">${escaped}</text>`);
+        }
+
+        parts.push("</svg>");
+        return { svgHtml: parts.join(""), result, totalWidth: totalW, totalHeight: totalH, isQr: true };
+      }
+
+      // --- Original 1D branch ---
+      const result = encodeCurrent(rawValue, sym);
+      if (result.error) return { error: result };
+
+      const bits = result.bits;
+      const barAreaWidth = bits.length * scale;
+      const textGap = showLabel ? fontPx + 10 : 0;
+      const customTextExtra = customText ? (fontPx + 8) : 0;
+      const topExtra = (customText && customTextPos === "top") ? customTextExtra : 0;
+      const bottomExtra = ((customText && customTextPos !== "top") ? customTextExtra : 0);
+      const logoExtra = logoDataUrl ? 26 : 0; // add space for logo row above barcode (after custom text)
+      const totalWidth = Math.max(barAreaWidth + margin * 2, 140);
+      const totalHeight = topExtra + height + margin * 2 + textGap + logoExtra + bottomExtra;
+      const startX = (totalWidth - barAreaWidth) / 2;
+      const barOffsetY = topExtra + logoExtra;
+
+      const parts = [`<svg xmlns="http://www.w3.org/2000/svg" width="${totalWidth}" height="${totalHeight}" viewBox="0 0 ${totalWidth} ${totalHeight}">`,
+        `<rect width="${totalWidth}" height="${totalHeight}" fill="#ffffff"/>`];
+
+      // Custom text at top (above logo if present)
+      if (customText && customTextPos === "top") {
+        const escaped = customText.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        parts.push(`<text x="${totalWidth / 2}" y="${margin + fontPx}" fill="#4a5562" font-family="sans-serif" font-size="${fontPx - 2}" font-weight="600" text-anchor="middle">${escaped}</text>`);
+      }
+
+      let i = 0;
+      while (i < bits.length) {
+        if (bits[i] === "1") {
+          let run = 1;
+          while (i + run < bits.length && bits[i + run] === "1") run++;
+          const x = startX + i * scale;
+          const w = run * scale;
+          parts.push(`<rect x="${x}" y="${margin + barOffsetY}" width="${w}" height="${height}" fill="#11161c"/>`);
+          i += run;
+        } else { i++; }
+      }
+
+      // Logo for 1D: centered above the barcode bars (between custom text and bars)
+      if (logoDataUrl) {
+        const logoH = 20;
+        const logoW = Math.min(48, totalWidth - 8);
+        const logoX = (totalWidth - logoW) / 2;
+        const logoY = margin + topExtra + 1;
+        parts.push(`<image href="${logoDataUrl}" x="${logoX}" y="${logoY}" width="${logoW}" height="${logoH}" preserveAspectRatio="xMidYMid meet"/>`);
+      }
+
+      if (showLabel) {
+        const escaped = result.displayText.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const textY = margin + height + fontPx + 4 + barOffsetY;
+        parts.push(`<text x="${totalWidth / 2}" y="${textY}" fill="#11161c" font-family="monospace" font-size="${fontPx}" font-weight="600" text-anchor="middle" letter-spacing="1.5">${escaped}</text>`);
+      }
+
+      // Custom text at bottom (1D mode)
+      if (customText && customTextPos !== "top") {
+        const escaped = customText.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const ctY = totalHeight - margin + fontPx - 4;
+        parts.push(`<text x="${totalWidth / 2}" y="${ctY}" fill="#4a5562" font-family="sans-serif" font-size="${fontPx - 2}" font-weight="600" text-anchor="middle">${escaped}</text>`);
+      }
+
+      parts.push("</svg>");
+      return { svgHtml: parts.join(""), result, totalWidth, totalHeight };
+    }
+
+    function encodeCurrent(value, sym) {
+      switch (sym) {
+        case "CODE39": return encodeCode39(value);
+        case "EAN13":  return encodeEan13(value);
+        case "ITF":    return encodeItf(value);
+        case "QR":     return encodeQR(value);
+        case "CODE128":
+        default:       return encodeCode128(value);
+      }
+    }
+
+    // =========================================================================
+    // TAB SWITCHING
+    // =========================================================================
+    let currentLogoDataUrl = null;
+    let currentCustomText = "";
+    let currentCustomTextPos = "top";
+
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById(btn.dataset.tab).classList.add("active");
+        if (btn.dataset.tab === "batch-tab") refreshBatchSheet();
+      });
+    });
+
+    // =========================================================================
+    // SINGLE MODE UI
+    // =========================================================================
+    const els = {
+      input: document.getElementById("barcodeInput"),
+      clearBtn: document.getElementById("clearBtn"),
+      badge: document.getElementById("inputTypeBadge"),
+      symbology: document.getElementById("symbologySelect"),
+      barWidth: document.getElementById("barWidth"),
+      barWidthVal: document.getElementById("barWidthVal"),
+      barHeight: document.getElementById("barHeight"),
+      barHeightVal: document.getElementById("barHeightVal"),
+      quietZone: document.getElementById("quietZone"),
+      quietZoneVal: document.getElementById("quietZoneVal"),
+      fontSize: document.getElementById("fontSize"),
+      fontSizeVal: document.getElementById("fontSizeVal"),
+      showText: document.getElementById("showText"),
+      svg: document.getElementById("barcodeSvg"),
+      errorBanner: document.getElementById("errorBanner"),
+      errorText: document.getElementById("errorText"),
+      autoFixBtn: document.getElementById("autoFixBtn"),
+      metaMode: document.getElementById("metaMode"),
+      metaChecksum: document.getElementById("metaChecksum"),
+      metaGeometry: document.getElementById("metaGeometry"),
+      downloadPngBtn: document.getElementById("downloadPngBtn"),
+      downloadSvgBtn: document.getElementById("downloadSvgBtn"),
+      copyPngBtn: document.getElementById("copyPngBtn"),
+      printBtn: document.getElementById("printBtn"),
+      historyList: document.getElementById("historyList"),
+      saveHistoryBtn: document.getElementById("saveHistoryBtn"),
+      statusToast: document.getElementById("statusToast")
+    };
+
+    const recentValues = ["4820019472", "0019485021", "BATCH-904-X"];
+    let pendingFixAction = null;
+
+    function showToast(msg) {
+      els.statusToast.textContent = msg;
+      clearTimeout(showToast._timer);
+      showToast._timer = setTimeout(() => { els.statusToast.textContent = ""; }, 2500);
+    }
+
+    function renderHistory() {
+      els.historyList.innerHTML = "";
+      recentValues.forEach(val => {
+        const btn = document.createElement("button");
+        btn.type = "button"; btn.className = "history-pill"; btn.textContent = val;
+        btn.addEventListener("click", () => { els.input.value = val; renderBarcode(); });
+        els.historyList.appendChild(btn);
+      });
+    }
+
+    function renderBarcode() {
+      const raw = els.input.value;
+      const isNumeric = /^\d+$/.test(raw) && raw.length > 0;
+      els.badge.textContent = raw.length === 0 ? "Empty" : `${isNumeric ? "Numeric" : "Text"} · ${raw.length} char${raw.length === 1 ? "" : "s"}`;
+
+      const scale = parseFloat(els.barWidth.value);
+      const height = parseInt(els.barHeight.value, 10);
+      const margin = parseInt(els.quietZone.value, 10);
+      const fontPx = parseInt(els.fontSize.value, 10);
+      const showLabel = els.showText.checked;
+
+      els.barWidthVal.textContent = `${scale} px`;
+      els.barHeightVal.textContent = `${height} px`;
+      els.quietZoneVal.textContent = `${margin} px`;
+      els.fontSizeVal.textContent = `${fontPx} px`;
+
+      const built = buildBarcodeSvgHtml(raw, els.symbology.value, scale, height, margin, fontPx, showLabel, currentLogoDataUrl, currentCustomText, currentCustomTextPos);
+
+      if (built.error) {
+        const e = built.error;
+        els.errorBanner.classList.add("visible");
+        els.errorText.textContent = e.error;
+        if (e.fixValue) {
+          els.autoFixBtn.style.display = "inline-block";
+          els.autoFixBtn.textContent = `Use ${e.fixValue}`;
+          pendingFixAction = () => { els.input.value = e.fixValue; renderBarcode(); };
+        } else if (e.canSwitchTo128) {
+          els.autoFixBtn.style.display = "inline-block";
+          els.autoFixBtn.textContent = "Switch to Code 128";
+          pendingFixAction = () => { els.symbology.value = "CODE128"; renderBarcode(); };
+        } else {
+          els.autoFixBtn.style.display = "none"; pendingFixAction = null;
+        }
+        els.svg.innerHTML = "";
+        els.svg.setAttribute("width", "240"); els.svg.setAttribute("height", "80");
+        els.downloadPngBtn.disabled = els.downloadSvgBtn.disabled = els.copyPngBtn.disabled = els.printBtn.disabled = true;
+        els.metaMode.textContent = els.metaChecksum.textContent = els.metaGeometry.textContent = "—";
+        return;
+      }
+
+      els.errorBanner.classList.remove("visible");
+      els.downloadPngBtn.disabled = els.downloadSvgBtn.disabled = els.copyPngBtn.disabled = els.printBtn.disabled = false;
+      els.svg.innerHTML = built.svgHtml;
+      els.svg.setAttribute("width", built.totalWidth);
+      els.svg.setAttribute("height", built.totalHeight);
+      els.svg.setAttribute("viewBox", `0 0 ${built.totalWidth} ${built.totalHeight}`);
+      els.metaMode.textContent = built.result.modeLabel;
+      els.metaChecksum.textContent = built.result.checksumLabel;
+      els.metaGeometry.textContent = built.isQr
+        ? `QR ${built.result.qrSize}×${built.result.qrSize} (${Math.round(built.totalWidth)}×${Math.round(built.totalHeight)} px)`
+        : `${built.result.bits.length} modules (${Math.round(built.totalWidth)}×${Math.round(built.totalHeight)} px)`;
+    }
+
+    function svgElementToCanvas(svgEl, dpr, callback) {
+      const svgData = new XMLSerializer().serializeToString(svgEl);
+      const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = (parseInt(svgEl.getAttribute("width"), 10) || svgEl.clientWidth || 200) * dpr;
+        canvas.height = (parseInt(svgEl.getAttribute("height"), 10) || svgEl.clientHeight || 100) * dpr;
+        const ctx = canvas.getContext("2d");
+        ctx.scale(dpr, dpr);
+        ctx.drawImage(img, 0, 0);
+        URL.revokeObjectURL(url);
+        callback(canvas);
+      };
+      img.src = url;
+    }
+
+    function safeFileSlug(val) {
+      return (val || "barcode").replace(/[^a-zA-Z0-9_-]+/g, "_").slice(0, 40);
+    }
+
+    // Single-event listeners
+    [els.input, els.symbology, els.barWidth, els.barHeight, els.quietZone, els.fontSize, els.showText].forEach(el => {
+      el.addEventListener("input", renderBarcode);
+      el.addEventListener("change", renderBarcode);
+    });
+    els.clearBtn.addEventListener("click", () => { els.input.value = ""; els.input.focus(); renderBarcode(); });
+    els.autoFixBtn.addEventListener("click", () => { if (pendingFixAction) pendingFixAction(); });
+    document.querySelectorAll("#single-tab .preset-chip").forEach(chip => {
+      chip.addEventListener("click", () => {
+        els.input.value = chip.dataset.val;
+        if (chip.dataset.sym) els.symbology.value = chip.dataset.sym;
+        renderBarcode();
+      });
+    });
+    els.saveHistoryBtn.addEventListener("click", () => {
+      const val = els.input.value.trim();
+      if (val && !recentValues.includes(val)) {
+        recentValues.unshift(val);
+        if (recentValues.length > 8) recentValues.pop();
+        renderHistory();
+        showToast("Pinned to recent values");
+      }
+    });
+    els.downloadSvgBtn.addEventListener("click", () => {
+      const svgData = new XMLSerializer().serializeToString(els.svg);
+      const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+      const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+      a.download = `barcode_${safeFileSlug(els.input.value)}.svg`; a.click();
+      showToast("Downloaded SVG");
+    });
+    els.downloadPngBtn.addEventListener("click", () => {
+      svgElementToCanvas(els.svg, 2, canvas => {
+        const a = document.createElement("a"); a.href = canvas.toDataURL("image/png");
+        a.download = `barcode_${safeFileSlug(els.input.value)}.png`; a.click();
+        showToast("Downloaded PNG");
+      });
+    });
+    els.copyPngBtn.addEventListener("click", () => {
+      svgElementToCanvas(els.svg, 2, canvas => {
+        canvas.toBlob(async blob => {
+          try { await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]); showToast("Copied to clipboard"); }
+          catch(e) { showToast("Clipboard image write unavailable"); }
+        });
+      });
+    });
+    els.printBtn.addEventListener("click", () => { window.print(); });
+
+    renderHistory();
+    renderBarcode();
+
+    // =========================================================================
+    // BATCH MODE
+    // =========================================================================
+    const batchTextarea = document.getElementById("batchTextarea");
+    const rangeFrom = document.getElementById("rangeFrom");
+    const rangeTo = document.getElementById("rangeTo");
+    const rangeGenBtn = document.getElementById("rangeGenBtn");
+    const fileInput = document.getElementById("fileInput");
+    const fileDropArea = document.getElementById("fileDropArea");
+    const fileNameDisplay = document.getElementById("fileNameDisplay");
+    const batchRefreshBtn = document.getElementById("batchRefreshBtn");
+    const stickerFormat = document.getElementById("stickerFormat");
+    const batchSymbology = document.getElementById("batchSymbology");
+    const batchShowText = document.getElementById("batchShowText");
+    const stickerGrid = document.getElementById("stickerGrid");
+    const stickerSheet = document.getElementById("stickerSheet");
+    const batchEmpty = document.getElementById("batchEmpty");
+    const batchCount = document.getElementById("batchCount");
+    const batchPages = document.getElementById("batchPages");
+    const batchErrors = document.getElementById("batchErrors");
+    const batchStatusToast = document.getElementById("batchStatusToast");
+    const batchDownloadPng = document.getElementById("batchDownloadPng");
+    const batchDownloadSvg = document.getElementById("batchDownloadSvg");
+    const batchDownloadPdf = document.getElementById("batchDownloadPdf");
+    const batchPrint = document.getElementById("batchPrint");
+
+    const STICKER_LAYOUTS = {
+      "a4-3x8":  { cols:3, rows:8, pageW:"210mm", pageH:"297mm", labelW:"63.5mm", labelH:"33.9mm", name:"A4 3×8" },
+      "a4-2x7":  { cols:2, rows:7, pageW:"210mm", pageH:"297mm", labelW:"99.1mm", labelH:"33.9mm", name:"A4 2×7" },
+      "a4-4x10": { cols:4, rows:10, pageW:"210mm", pageH:"297mm", labelW:"48.5mm", labelH:"16.9mm", name:"A4 4×10" },
+      "letter-3x10": { cols:3, rows:10, pageW:"215.9mm", pageH:"279.4mm", labelW:"66mm", labelH:"25.4mm", name:"US Letter 3×10" },
+      "letter-2x7":  { cols:2, rows:7, pageW:"215.9mm", pageH:"279.4mm", labelW:"101.6mm", labelH:"33.9mm", name:"US Letter 2×7" },
+      "flow": { cols:1, rows:999, pageW:"210mm", pageH:"297mm", labelW:"190mm", labelH:"33.9mm", name:"Flow" }
+    };
+
+    let batchValues = [];
+
+    // Logo upload handler (shared across single + batch modes)
+    const logoInput = document.getElementById("logoInput");
+    const logoClearBtn = document.getElementById("logoClearBtn");
+    const logoStatus = document.getElementById("logoStatus");
+
+    logoInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        currentLogoDataUrl = ev.target.result;
+        logoStatus.textContent = `${file.name} (${Math.round(file.size / 1024)} KB)`;
+        // Re-render affected views
+        if (document.getElementById("single-tab").classList.contains("active")) renderBarcode();
+        if (document.getElementById("batch-tab").classList.contains("active")) refreshBatchSheet();
+      };
+      reader.readAsDataURL(file);
+    });
+
+    logoClearBtn.addEventListener("click", () => {
+      currentLogoDataUrl = null;
+      logoInput.value = "";
+      logoStatus.textContent = "";
+      if (document.getElementById("single-tab").classList.contains("active")) renderBarcode();
+      if (document.getElementById("batch-tab").classList.contains("active")) refreshBatchSheet();
+    });
+
+    // Custom sticker text
+    const customStickerText = document.getElementById("customStickerText");
+    const customTextPosition = document.getElementById("customTextPosition");
+    customStickerText.addEventListener("input", () => {
+      currentCustomText = customStickerText.value.trim();
+      if (document.getElementById("single-tab").classList.contains("active")) renderBarcode();
+      if (document.getElementById("batch-tab").classList.contains("active")) refreshBatchSheet();
+    });
+    customTextPosition.addEventListener("change", () => {
+      currentCustomTextPos = customTextPosition.value;
+      if (document.getElementById("single-tab").classList.contains("active")) renderBarcode();
+      if (document.getElementById("batch-tab").classList.contains("active")) refreshBatchSheet();
+    });
+
+    function batchShowToast(msg) {
+      batchStatusToast.textContent = msg;
+      clearTimeout(batchShowToast._timer);
+      batchShowToast._timer = setTimeout(() => { batchStatusToast.textContent = ""; }, 2500);
+    }
+
+    function collectBatchValues() {
+      const values = [];
+
+      // 1. Textarea
+      const lines = batchTextarea.value.split(/[\r\n]+/);
+      lines.forEach(l => { const t = l.trim(); if (t) values.push(t); });
+
+      // 2. Range
+      // (range is generated on button click and populates textarea)
+
+      // 3. File (already parsed, stored globally)
+      return values;
+    }
+
+    function parseFileAndAdd(file) {
+      const ext = (file.name || "").split(".").pop().toLowerCase();
+      const reader = new FileReader();
+
+      if (ext === "xlsx" || ext === "xls") {
+        reader.onload = function(e) {
+          try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: "array" });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const json = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+            const values = [];
+            json.forEach(row => { if (row && row.length > 0 && row[0] != null) values.push(String(row[0]).trim()); });
+            batchValues = values;
+            fileNameDisplay.textContent = `${file.name} (${values.length} values)`;
+            refreshBatchSheet();
+          } catch (err) {
+            batchShowToast(`Excel parse error: ${err.message}`);
+            fileNameDisplay.textContent = `Error: ${err.message}`;
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      } else {
+        reader.onload = function(e) {
+          const text = e.target.result;
+          const delimiter = ext === "csv" ? "," : (ext === "tsv" ? "\t" : "\n");
+          let values;
+          if (delimiter === "\n") {
+            values = text.split(/[\r\n]+/).map(l => l.trim()).filter(Boolean);
+          } else {
+            values = text.split(/[\r\n]+/).map(line => line.split(delimiter)[0]).map(v => v.trim()).filter(Boolean);
+          }
+          batchValues = values;
+          fileNameDisplay.textContent = `${file.name} (${values.length} values)`;
+          refreshBatchSheet();
+        };
+        reader.readAsText(file);
+      }
+    }
+
+    // Number range generate with prefix/suffix detection
+    function parseNumericSuffix(str) {
+      const m = str.match(/^(.*?)(\d+)$/);
+      return m ? { prefix: m[1], num: parseInt(m[2], 10), digits: m[2].length } : null;
+    }
+
+    rangeGenBtn.addEventListener("click", () => {
+      const from = rangeFrom.value.trim();
+      const to = rangeTo.value.trim();
+      const fromParsed = parseNumericSuffix(from);
+      const toParsed = parseNumericSuffix(to);
+
+      if (!fromParsed || !toParsed || fromParsed.prefix !== toParsed.prefix) {
+        // Fallback: if both are purely numeric, treat as plain number range
+        const fNum = parseInt(from, 10); const tNum = parseInt(to, 10);
+        if (!isNaN(fNum) && !isNaN(tNum) && String(fNum) === from && String(tNum) === to) {
+          const values = [];
+          for (let n = fNum; n <= tNum; n++) values.push(String(n));
+          batchValues = values;
+          batchTextarea.value = values.join("\n");
+          refreshBatchSheet();
+          batchShowToast(`Generated ${values.length} values`);
+          return;
+        }
+        batchShowToast("Range: both values must use same prefix format, e.g. SN-100 to SN-110, or plain numbers 1 to 100");
+        return;
+      }
+
+      const values = [];
+      const pad = Math.max(fromParsed.digits, toParsed.digits);
+      for (let n = fromParsed.num; n <= toParsed.num; n++) {
+        values.push(fromParsed.prefix + String(n).padStart(pad, "0"));
+      }
+      batchValues = values;
+      batchTextarea.value = values.join("\n");
+      batchShowToast(`Generated ${values.length} values`);
+      refreshBatchSheet();
+    });
+
+    function refreshBatchSheet() {
+      const values = collectBatchValues();
+      if (batchTextarea.value.trim()) batchValues = values;
+
+      const sym = batchSymbology.value;
+      const show = batchShowText.checked;
+      const layout = STICKER_LAYOUTS[stickerFormat.value] || STICKER_LAYOUTS["a4-3x8"];
+
+      // Use tight barcode params for batch
+      const scale = 1.5;
+      const height = layout.labelH === "190mm" ? 54 : 42;
+      const margin = 6;
+      const fontPx = 11;
+
+      let errors = 0;
+      const cells = [];
+
+      batchValues.forEach(val => {
+        const built = buildBarcodeSvgHtml(val, sym, scale, height, margin, fontPx, show, currentLogoDataUrl, currentCustomText, currentCustomTextPos);
+        if (built.error) { errors++; cells.push({ error: built.error.error, val }); }
+        else cells.push({ svgHtml: built.svgHtml, val, result: built.result });
+      });
+
+      // Stats
+      batchCount.textContent = batchValues.length;
+      batchErrors.textContent = errors;
+      const perPage = layout.cols * (layout.rows === 999 ? Math.max(1, Math.ceil(cells.length / layout.cols)) : layout.rows);
+      const pageCount = Math.max(1, Math.ceil(cells.length / perPage));
+      batchPages.textContent = pageCount;
+
+      // Render
+      stickerGrid.innerHTML = "";
+      if (cells.length === 0) {
+        batchEmpty.style.display = "block";
+        stickerSheet.style.display = "none";
+        return;
+      }
+      batchEmpty.style.display = "none";
+      stickerSheet.style.display = "block";
+
+      // Set grid template
+      const effectiveRows = layout.rows === 999 ? Math.ceil(cells.length / layout.cols) : layout.rows;
+      stickerGrid.style.gridTemplateColumns = `repeat(${layout.cols}, 1fr)`;
+
+      cells.forEach((cell, idx) => {
+        const div = document.createElement("div");
+        div.className = "sticker-cell";
+        if (cell.error) {
+          div.innerHTML = `<span style="color:var(--danger);font-size:0.7rem;text-align:center;">${cell.error}</span><span class="cell-label">${cell.val}</span>`;
+        } else {
+          div.innerHTML = cell.svgHtml + `<span class="cell-label">${cell.val}</span>`;
+        }
+        stickerGrid.appendChild(div);
+      });
+    }
+
+    // Re-render on symbology/text changes
+    [batchSymbology, batchShowText, stickerFormat].forEach(el => {
+      el.addEventListener("change", refreshBatchSheet);
+    });
+    batchTextarea.addEventListener("input", refreshBatchSheet);
+    batchRefreshBtn.addEventListener("click", refreshBatchSheet);
+
+    // File upload
+    fileInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file) parseFileAndAdd(file);
+    });
+
+    fileDropArea.addEventListener("click", () => fileInput.click());
+    fileDropArea.addEventListener("dragover", (e) => { e.preventDefault(); fileDropArea.classList.add("dragover"); });
+    fileDropArea.addEventListener("dragleave", () => fileDropArea.classList.remove("dragover"));
+    fileDropArea.addEventListener("drop", (e) => {
+      e.preventDefault();
+      fileDropArea.classList.remove("dragover");
+      const file = e.dataTransfer.files[0];
+      if (file) parseFileAndAdd(file);
+    });
+
+    // Batch Export: SVG (all in one file)
+    batchDownloadSvg.addEventListener("click", () => {
+      const svgEls = stickerGrid.querySelectorAll(".sticker-cell svg");
+      if (svgEls.length === 0) { batchShowToast("Nothing to export"); return; }
+      let combined = "";
+      svgEls.forEach(svg => { combined += new XMLSerializer().serializeToString(svg) + "\n"; });
+      const blob = new Blob([combined], { type: "image/svg+xml;charset=utf-8" });
+      const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+      a.download = "barcode_batch.svg"; a.click();
+      batchShowToast(`Downloaded ${svgEls.length} SVGs`);
+    });
+
+    // Batch Export: PNG (individual canvases, downloadable one by one in sequence)
+    batchDownloadPng.addEventListener("click", () => {
+      const svgEls = stickerGrid.querySelectorAll(".sticker-cell svg");
+      if (svgEls.length === 0) { batchShowToast("Nothing to export"); return; }
+      let done = 0;
+      svgEls.forEach((svg, idx) => {
+        svgElementToCanvas(svg, 2, canvas => {
+          const a = document.createElement("a"); a.href = canvas.toDataURL("image/png");
+          a.download = `barcode_${String(idx + 1).padStart(3, "0")}.png`; a.click();
+          done++;
+          if (done === svgEls.length) batchShowToast(`Downloaded ${done} PNGs`);
+        });
+      });
+    });
+
+    // Batch Export: PDF (print-ready, using browser print)
+    batchDownloadPdf.addEventListener("click", () => {
+      const svgEls = stickerGrid.querySelectorAll(".sticker-cell svg");
+      if (svgEls.length === 0) { batchShowToast("Nothing to export"); return; }
+
+      // Build a print-only HTML page
+      const layout = STICKER_LAYOUTS[stickerFormat.value] || STICKER_LAYOUTS["a4-3x8"];
+      const cellsHtml = Array.from(svgEls).map(svg => {
+        const label = svg.nextElementSibling ? svg.nextElementSibling.textContent : "";
+        return `<div class="cell">${new XMLSerializer().serializeToString(svg)}<div class="label">${label}</div></div>`;
+      }).join("");
+
+      const pdfHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Barcode Labels</title>
+<style>
+  @page { size: ${layout.pageW} ${layout.pageH}; margin: 8mm; }
+  body { font-family: monospace; }
+  .grid { display: grid; grid-template-columns: repeat(${layout.cols}, 1fr); gap: 4mm; }
+  .cell { display: flex; flex-direction: column; align-items: center; border: 1px solid #eee; padding: 2mm; }
+  .cell svg { max-width: 100%; height: auto; }
+  .label { font-size: 7pt; color: #666; margin-top: 1mm; }
+</style></head><body><div class="grid">${cellsHtml}</div></body></html>`;
+
+      const blob = new Blob([pdfHtml], { type: "text/html;charset=utf-8" });
+      const win = window.open("", "_blank");
+      win.document.write(pdfHtml);
+      win.document.close();
+      setTimeout(() => {
+        win.print();
+        batchShowToast("PDF opened for print — use Save as PDF in print dialog");
+      }, 600);
+    });
+
+    // Batch print
+    batchPrint.addEventListener("click", () => { window.print(); });
+
+    // Seed initial batch values
+    batchTextarea.value = "4820019472\n0019485021\nBATCH-904-X";
+    // Silence initial render — only show when tab is active
+    // (if batch tab becomes active, refreshBatchSheet() is called by tab switch)
+
+    if (typeof globalThis !== "undefined") {
+      globalThis.__BARCODE_API__ = {
+        CODE128_PATTERNS,
+        encodeCode128,
+        encodeCode39,
+        computeEan13CheckDigit,
+        encodeEan13,
+        encodeItf,
+        encodeQR,
+        encodeCurrent,
+        buildBarcodeSvgHtml,
+        parseNumericSuffix,
+        safeFileSlug,
+        STICKER_LAYOUTS,
+        QR_ECI_ALNUM,
+        qrPlaceModules,
+        qrInterleave,
+        qrTerminateAndPad,
+        qrEncodeAlpha,
+        qrEncodeByte,
+        QR_VERSION_INFO
+      };
+    }
+
+  </script>
+</body>
+</html>

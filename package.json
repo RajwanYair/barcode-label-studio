@@ -1,0 +1,29 @@
+{
+  "name": "barcode-label-studio",
+  "version": "1.0.0",
+  "description": "Zero-backend 1D & QR barcode generator with custom logo branding and batch sticker sheet printing studio (Code 128, Code 39, EAN-13, ITF, QR Code)",
+  "main": "index.html",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RajwanYair/barcode-label-studio.git"
+  },
+  "homepage": "https://rajwanyair.github.io/barcode-label-studio/",
+  "bugs": {
+    "url": "https://github.com/RajwanYair/barcode-label-studio/issues"
+  },
+  "scripts": {
+    "test": "node --test tests/barcode.test.js"
+  },
+  "keywords": [
+    "barcode",
+    "qrcode",
+    "code128",
+    "code39",
+    "ean13",
+    "itf",
+    "label-printing",
+    "avery",
+    "svg"
+  ],
+  "license": "MIT"
+}
