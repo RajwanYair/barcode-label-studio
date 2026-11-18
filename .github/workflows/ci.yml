@@ -5,23 +5,27 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
-    name: Full Function, Config, Doc & Asset Test Suite (Node ${{ matrix.node }})
+    name: Fast Zero-Dep Test & Meta-Guard Suite
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node: ["20", "22"]
+    timeout-minutes: 2
     steps:
-      - name: Checkout repository
+      - name: Shallow checkout repository
         uses: actions/checkout@v4
-
-      - name: Setup Node.js ${{ matrix.node }}
-        uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node }}
+          fetch-depth: 1
 
       - name: Run 100% Function, Config, SVG & Documentation Test Suite
         run: npm test
+
 

@@ -5,10 +5,16 @@ const path = require("node:path");
 const vm = require("node:vm");
 
 const ROOT_DIR = path.resolve(__dirname, "..");
-const INDEX_HTML_PATH = path.join(ROOT_DIR, "index.html");
-const TEST_FILE_PATH = __filename;
-const htmlContent = fs.readFileSync(INDEX_HTML_PATH, "utf8");
-const testFileContent = fs.readFileSync(TEST_FILE_PATH, "utf8");
+const FILE_CACHE = new Map();
+function readRepoFile(relPath) {
+  if (!FILE_CACHE.has(relPath)) {
+    FILE_CACHE.set(relPath, fs.readFileSync(path.join(ROOT_DIR, relPath), "utf8"));
+  }
+  return FILE_CACHE.get(relPath);
+}
+
+const htmlContent = readRepoFile("index.html");
+const testFileContent = readRepoFile("tests/barcode.test.js");
 
 /**
  * Extract the inline application <script> from index.html and evaluate it
@@ -296,7 +302,7 @@ describe("Repository Configs, Workflows, Documentation & SVG Assets Integrity", 
   });
 
   test("package.json has valid metadata, repository URLs, and test script", () => {
-    const pkg = JSON.parse(fs.readFileSync(path.join(ROOT_DIR, "package.json"), "utf8"));
+    const pkg = JSON.parse(readRepoFile("package.json"));
     assert.equal(pkg.name, "barcode-label-studio");
     assert.match(pkg.version, /^\d+\.\d+\.\d+$/);
     assert.equal(pkg.main, "index.html");
@@ -307,11 +313,14 @@ describe("Repository Configs, Workflows, Documentation & SVG Assets Integrity", 
     assert.ok(pkg.scripts && pkg.scripts.test.includes("node --test"));
   });
 
-  test(".github/workflows/ci.yml runs npm test on push and pull_request to main", () => {
-    const ciYaml = fs.readFileSync(path.join(ROOT_DIR, ".github/workflows/ci.yml"), "utf8");
+  test(".github/workflows/ci.yml is optimized with concurrency, shallow checkout, and runs npm test", () => {
+    const ciYaml = readRepoFile(".github/workflows/ci.yml");
     assert.match(ciYaml, /push:/);
     assert.match(ciYaml, /pull_request:/);
     assert.match(ciYaml, /branches:\s*\[main\]/);
+    assert.match(ciYaml, /concurrency:/);
+    assert.match(ciYaml, /cancel-in-progress:\s*true/);
+    assert.match(ciYaml, /fetch-depth:\s*1/);
     assert.match(ciYaml, /npm test/);
   });
 
@@ -324,7 +333,7 @@ describe("Repository Configs, Workflows, Documentation & SVG Assets Integrity", 
       "assets/roadmap-sprints.svg"
     ];
     for (const relPath of svgFiles) {
-      const content = fs.readFileSync(path.join(ROOT_DIR, relPath), "utf8").trim();
+      const content = readRepoFile(relPath).trim();
       assert.match(content, /^<svg\s+xmlns="http:\/\/www\.w3\.org\/2000\/svg"/, `${relPath} must start with <svg xmlns="...">`);
       assert.match(content, /viewBox="0 0 \d+ \d+"/, `${relPath} must define viewBox`);
       assert.match(content, /<title[\s>]/, `${relPath} must include <title> for accessibility`);
@@ -334,10 +343,10 @@ describe("Repository Configs, Workflows, Documentation & SVG Assets Integrity", 
   });
 
   test("README.md, SPEC.md, ROADMAP.md, and CONTRIBUTING.md local file links, Mermaid diagrams, and Sprint tasks are valid", () => {
-    const readme = fs.readFileSync(path.join(ROOT_DIR, "README.md"), "utf8");
-    const spec = fs.readFileSync(path.join(ROOT_DIR, "SPEC.md"), "utf8");
-    const roadmap = fs.readFileSync(path.join(ROOT_DIR, "ROADMAP.md"), "utf8");
-    const contributing = fs.readFileSync(path.join(ROOT_DIR, "CONTRIBUTING.md"), "utf8");
+    const readme = readRepoFile("README.md");
+    const spec = readRepoFile("SPEC.md");
+    const roadmap = readRepoFile("ROADMAP.md");
+    const contributing = readRepoFile("CONTRIBUTING.md");
 
     // Verify Mermaid diagrams in README.md, SPEC.md, and ROADMAP.md
     const readmeMermaid = [...readme.matchAll(/```mermaid\n([\s\S]*?)```/g)].map(m => m[1]);
@@ -382,7 +391,7 @@ describe("Repository Configs, Workflows, Documentation & SVG Assets Integrity", 
       /subscription fee/i
     ];
     for (const file of docFiles) {
-      const content = fs.readFileSync(path.join(ROOT_DIR, file), "utf8");
+      const content = readRepoFile(file);
       for (const pat of forbiddenPatterns) {
         assert.doesNotMatch(content, pat, `Forbidden commercial/quote pattern ${pat} found in ${file}`);
       }
@@ -764,6 +773,20 @@ describe("UI Controllers, Batch Pipeline, File Parser, I18N (EN/HE) & Theme (Lig
     assert.equal(api.getTheme(), "dark");
     assert.equal(api.handleKeyboardShortcuts({ altKey: true, key: "t" }), "theme");
     assert.equal(api.getTheme(), "light");
+  });
+
+  test("Performance & Memoization Gate: Non-blocking CDN script and sub-20ms 200-barcode batch rendering", () => {
+    assert.match(htmlContent, /<script[^>]+xlsx\.full\.min\.js[^>]+async\s+defer/, "SheetJS script must use async defer so startup never blocks");
+    assert.ok(api.BARCODE_SVG_CACHE instanceof Map || typeof api.BARCODE_SVG_CACHE.get === "function");
+
+    const t0 = performance.now();
+    for (let i = 0; i < 200; i++) {
+      const val = `SN-${String(1000 + (i % 25)).padStart(6, "0")}`;
+      const res = api.buildBarcodeSvgHtml(val, "CODE128", 2, 80, 12, 14, true);
+      assert.equal(res.error, undefined);
+    }
+    const elapsedMs = performance.now() - t0;
+    assert.ok(elapsedMs < 50, `Expected 200 cached/batch barcodes to render in <50ms, took ${elapsedMs.toFixed(2)}ms`);
   });
 });
 

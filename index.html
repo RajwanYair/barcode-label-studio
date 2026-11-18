@@ -1273,8 +1273,8 @@
     </div>
   </footer>
 
-  <!-- SheetJS (XLSX) loaded via CDN for Excel parsing -->
-  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+  <!-- SheetJS (XLSX) loaded asynchronously via CDN so initial studio boot never blocks -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js" async defer></script>
 
   <script>
     // =========================================================================
@@ -1815,12 +1815,29 @@
     }
 
     // =========================================================================
-    // COMMON: build a single barcode SVG string (used by both Single and Batch modes)
+    // COMMON: build a single barcode SVG string (with O(1) LRU memoization cache)
+    const BARCODE_SVG_CACHE = new Map();
+    const BARCODE_SVG_CACHE_MAX = 512;
+
     function buildBarcodeSvgHtml(rawValue, sym, scale, height, margin, fontPx, showLabel, logoDataUrl, customText, customTextPos) {
+      const cacheKey = `${rawValue}\x1f${sym}\x1f${scale}\x1f${height}\x1f${margin}\x1f${fontPx}\x1f${showLabel ? 1 : 0}\x1f${logoDataUrl || ""}\x1f${customText || ""}\x1f${customTextPos || ""}`;
+      if (BARCODE_SVG_CACHE.has(cacheKey)) {
+        return BARCODE_SVG_CACHE.get(cacheKey);
+      }
+
+      const storeCache = (val) => {
+        if (BARCODE_SVG_CACHE.size >= BARCODE_SVG_CACHE_MAX) {
+          const oldestKey = BARCODE_SVG_CACHE.keys().next().value;
+          BARCODE_SVG_CACHE.delete(oldestKey);
+        }
+        BARCODE_SVG_CACHE.set(cacheKey, val);
+        return val;
+      };
+
       // QR code branch
       if (sym === "QR") {
         const result = encodeQR(rawValue);
-        if (result.error) return { error: result };
+        if (result.error) return storeCache({ error: result });
 
         const modSize = Math.max(3, Math.round(scale * 1.8)); // QR module pixel size
         const qrPx = result.qrSize * modSize;
@@ -1878,12 +1895,12 @@
         }
 
         parts.push("</svg>");
-        return { svgHtml: parts.join(""), result, totalWidth: totalW, totalHeight: totalH, isQr: true };
+        return storeCache({ svgHtml: parts.join(""), result, totalWidth: totalW, totalHeight: totalH, isQr: true });
       }
 
       // --- Original 1D branch ---
       const result = encodeCurrent(rawValue, sym);
-      if (result.error) return { error: result };
+      if (result.error) return storeCache({ error: result });
 
       const bits = result.bits;
       const barAreaWidth = bits.length * scale;
@@ -1941,7 +1958,7 @@
       }
 
       parts.push("</svg>");
-      return { svgHtml: parts.join(""), result, totalWidth, totalHeight };
+      return storeCache({ svgHtml: parts.join(""), result, totalWidth, totalHeight });
     }
 
     function encodeCurrent(value, sym) {
@@ -2915,6 +2932,7 @@
         QR_ECI_ALNUM,
         STICKER_LAYOUTS,
         I18N,
+        BARCODE_SVG_CACHE,
         // Core 1D & 2D Encoders
         encodeCode128,
         encodeCode39,
