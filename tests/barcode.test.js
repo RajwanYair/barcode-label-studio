@@ -17,30 +17,35 @@ function loadBarcodeApi() {
   assert.ok(scriptMatches.length >= 1, "Expected inline <script> block in index.html");
   const appScript = scriptMatches[scriptMatches.length - 1][1];
 
-  const makeMockElement = (id = "") => ({
-    id,
-    value: id === "barcodeInput" ? "4820019472" : (id === "symbologySelect" || id === "batchSymbology" ? "CODE128" : "2"),
-    checked: true,
-    disabled: false,
-    textContent: "",
-    innerHTML: "",
-    style: {},
-    dataset: { tab: "single-tab", val: "4820019472", sym: "CODE128" },
-    classList: {
-      add() {},
-      remove() {},
-      contains() { return false; }
-    },
-    setAttribute() {},
-    getAttribute() { return "200"; },
-    addEventListener() {},
-    appendChild() {},
-    querySelectorAll() { return []; },
-    focus() {},
-    click() {}
-  });
+  const makeMockElement = (id = "") => {
+    const attrs = new Map();
+    return {
+      id,
+      value: id === "barcodeInput" ? "4820019472" : (id === "symbologySelect" || id === "batchSymbology" ? "CODE128" : "2"),
+      checked: true,
+      disabled: false,
+      textContent: "",
+      placeholder: "",
+      innerHTML: "",
+      style: {},
+      dataset: { tab: "single-tab", val: "4820019472", sym: "CODE128" },
+      classList: {
+        add() {},
+        remove() {},
+        contains() { return false; }
+      },
+      setAttribute(k, v) { attrs.set(k, String(v)); },
+      getAttribute(k) { return attrs.has(k) ? attrs.get(k) : "200"; },
+      addEventListener() {},
+      appendChild() {},
+      querySelectorAll() { return []; },
+      focus() {},
+      click() {}
+    };
+  };
 
   const elementsById = new Map();
+  const docElement = makeMockElement("html");
   const sandbox = {
     globalThis: null,
     window: {
@@ -50,6 +55,7 @@ function loadBarcodeApi() {
       }
     },
     document: {
+      documentElement: docElement,
       getElementById(id) {
         if (!elementsById.has(id)) {
           elementsById.set(id, makeMockElement(id));
@@ -83,10 +89,10 @@ function loadBarcodeApi() {
   vm.runInContext(appScript, sandbox, { filename: "index.html" });
 
   assert.ok(sandbox.__BARCODE_API__, "Expected __BARCODE_API__ to be exposed on globalThis");
-  return { api: sandbox.__BARCODE_API__, requestedIds: [...elementsById.keys()] };
+  return { api: sandbox.__BARCODE_API__, requestedIds: [...elementsById.keys()], docElement };
 }
 
-const { api, requestedIds } = loadBarcodeApi();
+const { api, requestedIds, docElement } = loadBarcodeApi();
 
 describe("Repository & HTML Structure Integrity", () => {
   test("Required standard GitHub documentation files exist and are non-empty", () => {
@@ -328,3 +334,42 @@ describe("Logo Upload & SVG Embedded Image", () => {
     assert.ok(!built.svgHtml.includes("<image href="));
   });
 });
+
+describe("Bilingual (English/Hebrew RTL), Dark/Light Theme & Responsive Design", () => {
+  test("I18N dictionary has matching keys for English (en) and Hebrew (he)", () => {
+    assert.ok(api.I18N && api.I18N.en && api.I18N.he);
+    const enKeys = Object.keys(api.I18N.en).sort();
+    const heKeys = Object.keys(api.I18N.he).sort();
+    assert.deepEqual(enKeys, heKeys, "English and Hebrew dictionaries must have identical key sets");
+    assert.equal(api.I18N.he.appTitle, "סטודיו לתוויות ברקוד");
+  });
+
+  test("setLanguage switches between English (ltr) and Hebrew (rtl)", () => {
+    assert.equal(api.setLanguage("he"), "he");
+    assert.equal(api.getLanguage(), "he");
+    assert.equal(docElement.getAttribute("lang"), "he");
+    assert.equal(docElement.getAttribute("dir"), "rtl");
+
+    assert.equal(api.setLanguage("en"), "en");
+    assert.equal(api.getLanguage(), "en");
+    assert.equal(docElement.getAttribute("lang"), "en");
+    assert.equal(docElement.getAttribute("dir"), "ltr");
+  });
+
+  test("setTheme switches between light and dark modes", () => {
+    assert.equal(api.setTheme("dark"), "dark");
+    assert.equal(api.getTheme(), "dark");
+    assert.equal(docElement.getAttribute("data-theme"), "dark");
+
+    assert.equal(api.setTheme("light"), "light");
+    assert.equal(api.getTheme(), "light");
+    assert.equal(docElement.getAttribute("data-theme"), "light");
+  });
+
+  test("index.html includes responsive media queries for tablet (1024px) and mobile (640px) and dark theme rules", () => {
+    assert.match(htmlContent, /@media\s*\(max-width:\s*1024px\)/, "Expected tablet responsive breakpoint");
+    assert.match(htmlContent, /@media\s*\(max-width:\s*640px\)/, "Expected mobile responsive breakpoint");
+    assert.match(htmlContent, /\[data-theme="dark"\]/, "Expected dark theme CSS custom properties");
+  });
+});
+

@@ -58,7 +58,9 @@ Because the entire application lives in a single static [`index.html`](index.htm
 | **QR Code ISO/IEC 18004 + Custom Logo Overlay** | ✅ Vector SVG + badge | 💰 Paid tier / watermarked | ✅ Yes |
 | **Physical Avery A4 & US Letter `@page` Grids** | ✅ Exact `mm` geometry | ❌ Single image download only | ✅ Yes |
 | **Batch CSV / TSV / Excel (`.xlsx`/`.xls`) Import** | ✅ Drag-and-drop parser | ❌ Manual 1-by-1 entry | ✅ Yes |
-| **Automated Unit Test Suite (`node:test`)** | ✅ 24 deterministic tests | ❌ None | ❌ Proprietary |
+| **Bilingual UI (English LTR & Hebrew `עברית` RTL)** | ✅ Instant 1-click toggle | ❌ English only | ⚠️ OS-locked |
+| **Dark / Light Mode + PC, Tablet & Mobile Layout** | ✅ Adaptive & optical-safe | ⚠️ Fixed desktop layout | ❌ Desktop only |
+| **Automated Unit Test Suite (`node:test`)** | ✅ 28 deterministic tests | ❌ None | ❌ Proprietary |
 
 ---
 

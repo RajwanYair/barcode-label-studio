@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2026-11-17
 
 ### Added
+- **Responsive Multi-Device UI, Dark/Light Themes & Bilingual (English / Hebrew) Support**:
+  - Full **English (`LTR`)** and **Hebrew (`עברית`, `RTL`)** localization with one-click switcher (`#langToggleBtn`), while keeping serial numbers and barcode inputs LTR-isolated.
+  - **Dark & Light Theme System** (`#themeToggleBtn`) with automatic `prefers-color-scheme` detection, `localStorage` persistence, and optical-scanner-safe white sticker surfaces.
+  - Responsive adaptive layouts for **PC (`>1024px`)**, **Tablet (`641px–1024px`)**, and **Mobile (`<=640px`)** with touch-friendly controls.
 - **Single Barcode Workbench**:
   - Pure JavaScript SVG barcode encoders for **Code 128 Auto** (128B ASCII + 128C numeric compaction), **Code 39**, **EAN-13** (with automatic check-digit calculation/repair), **ITF (Interleaved 2 of 5)**, and **QR Code** (ISO/IEC 18004 Model 2, Versions 1–6 with Reed-Solomon ECC).
   - Custom brand logo upload & embedding (header banner above 1D barcodes and centered badge overlay on QR Codes).

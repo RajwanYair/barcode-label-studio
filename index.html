@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -18,10 +18,13 @@
   <meta name="twitter:description" content="Zero-backend 1D &amp; 2D QR barcode workbench with custom logo embedding and Avery A4 &amp; US Letter batch sticker printing." />
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230b132b'/%3E%3Cg fill='%2338bdf8'%3E%3Crect x='10' y='12' width='5' height='32'/%3E%3Crect x='18' y='12' width='2' height='32'/%3E%3Crect x='23' y='12' width='6' height='32'/%3E%3Crect x='32' y='12' width='3' height='32'/%3E%3Crect x='38' y='12' width='5' height='32'/%3E%3Crect x='46' y='12' width='2' height='32'/%3E%3Crect x='51' y='12' width='4' height='32'/%3E%3C/g%3E%3Crect x='10' y='48' width='45' height='4' rx='2' fill='%23ffffff'/%3E%3C/svg%3E" />
   <style>
-    :root {
+    :root,
+    [data-theme="light"] {
       --bg-workbench: #eef1f5;
       --bg-panel: #ffffff;
       --bg-subtle: #f6f8fa;
+      --bg-bed: #f8fafc;
+      --bed-grid: rgba(0, 0, 0, 0.035);
       --ink-primary: #11161c;
       --ink-secondary: #4a5562;
       --ink-muted: #768390;
@@ -32,9 +35,32 @@
       --accent-soft: #e8f0fe;
       --danger: #b42318;
       --danger-bg: #fef3f2;
+      --danger-border: #fecdca;
       --success: #067647;
-      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --shadow-panel: 0 1px 3px rgba(17, 22, 28, 0.05);
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Heebo", "Rubik", "Arial Hebrew", Roboto, Helvetica, Arial, sans-serif;
       --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    }
+
+    [data-theme="dark"] {
+      --bg-workbench: #0b111e;
+      --bg-panel: #131c2e;
+      --bg-subtle: #1b263b;
+      --bg-bed: #0f172a;
+      --bed-grid: rgba(255, 255, 255, 0.045);
+      --ink-primary: #f1f5f9;
+      --ink-secondary: #cbd5e1;
+      --ink-muted: #94a3b8;
+      --border-hairline: #26354d;
+      --border-strong: #3b4f6b;
+      --accent: #38bdf8;
+      --accent-hover: #0ea5e9;
+      --accent-soft: rgba(56, 189, 248, 0.15);
+      --danger: #f87171;
+      --danger-bg: rgba(127, 29, 29, 0.35);
+      --danger-border: rgba(248, 113, 113, 0.4);
+      --success: #34d399;
+      --shadow-panel: 0 4px 14px rgba(2, 6, 23, 0.45);
     }
 
     * {
@@ -52,6 +78,7 @@
       display: flex;
       flex-direction: column;
       padding: 24px 16px;
+      transition: background-color 0.18s ease, color 0.18s ease;
     }
 
     .header-bar {
@@ -60,14 +87,22 @@
       margin: 0 auto 12px;
       display: flex;
       justify-content: space-between;
-      align-items: baseline;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
       border-bottom: 1px solid var(--border-hairline);
       padding-bottom: 12px;
     }
 
+    .header-brand {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
     .header-bar h1 {
-      font-size: 1.25rem;
-      font-weight: 650;
+      font-size: 1.28rem;
+      font-weight: 700;
       letter-spacing: -0.02em;
     }
 
@@ -75,6 +110,37 @@
       font-family: var(--font-mono);
       font-size: 0.75rem;
       color: var(--ink-secondary);
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      min-height: 34px;
+      border-radius: 6px;
+      border: 1px solid var(--border-strong);
+      background: var(--bg-panel);
+      color: var(--ink-primary);
+      font-family: var(--font-sans);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+      text-decoration: none;
+    }
+
+    .toolbar-btn:hover {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--accent);
     }
 
     /* Tab Bar */
@@ -287,9 +353,9 @@
 
     .label-bed {
       background:
-        linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px) 0 0 / 16px 16px,
-        linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px) 0 0 / 16px 16px,
-        #f8fafc;
+        linear-gradient(90deg, var(--bed-grid) 1px, transparent 1px) 0 0 / 16px 16px,
+        linear-gradient(var(--bed-grid) 1px, transparent 1px) 0 0 / 16px 16px,
+        var(--bg-bed);
       border: 1px solid var(--border-hairline);
       border-radius: 6px;
       min-height: 240px;
@@ -304,10 +370,11 @@
 
     .thermal-sticker {
       background: #ffffff;
+      color: #11161c;
       border: 1px solid #cfd7df;
       border-radius: 4px;
       padding: 18px 22px;
-      box-shadow: 0 3px 10px rgba(17, 22, 28, 0.07);
+      box-shadow: 0 3px 10px rgba(17, 22, 28, 0.12);
       max-width: 100%;
       overflow-x: auto;
       display: flex;
@@ -325,7 +392,7 @@
       display: none;
       width: 100%;
       background: var(--danger-bg);
-      border: 1px solid #fecdca;
+      border: 1px solid var(--danger-border);
       color: var(--danger);
       border-radius: 4px;
       padding: 12px 14px;
@@ -459,15 +526,102 @@
       font-family: var(--font-mono);
       color: var(--success);
       min-height: 1.1em;
-      text-align: right;
+      text-align: end;
     }
 
-    @media (max-width: 760px) {
-      .workbench {
+    /* Keep barcode values and serial codes LTR even when UI is in RTL (Hebrew) */
+    .ltr-code {
+      direction: ltr;
+      unicode-bidi: isolate;
+    }
+
+    /* === RESPONSIVE: TABLET (<= 1024px) & MOBILE (<= 640px) === */
+    @media (max-width: 1024px) {
+      .single-workbench {
         grid-template-columns: 1fr;
+        max-width: 720px;
+      }
+      .batch-controls {
+        grid-template-columns: 1fr 1fr;
+      }
+      .batch-controls .batch-source-panel:last-child {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 12px 10px;
+      }
+      .header-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+      .header-controls {
+        justify-content: space-between;
+      }
+      .toolbar-btn {
+        flex: 1;
+        justify-content: center;
+        min-height: 38px;
+      }
+      .tab-bar {
+        width: 100%;
+      }
+      .tab-btn {
+        flex: 1;
+        text-align: center;
+        padding: 10px 8px;
+        font-size: 0.84rem;
+      }
+      .panel,
+      .batch-source-panel {
+        padding: 16px 14px;
+      }
+      .controls-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .telemetry-strip {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+      .telemetry-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .telemetry-item span {
+        margin-bottom: 0;
       }
       .action-bar {
         grid-template-columns: 1fr 1fr;
+      }
+      .btn {
+        min-height: 42px;
+      }
+      .batch-controls {
+        grid-template-columns: 1fr;
+      }
+      .sticker-format-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+      .sticker-format-row select,
+      .sticker-format-row input[type="text"],
+      .sticker-format-row input[type="file"],
+      .sticker-format-row .btn {
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+      .batch-export-bar {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+      .sticker-grid {
+        grid-template-columns: 1fr !important;
       }
     }
 
@@ -571,7 +725,8 @@
     }
 
     .range-inputs input {
-      width: 120px;
+      flex: 1;
+      min-width: 0;
       font-family: var(--font-mono);
       font-size: 0.92rem;
     }
@@ -648,7 +803,8 @@
       border: 1px solid var(--border-hairline);
       border-radius: 6px;
       padding: 16px;
-      box-shadow: 0 1px 3px rgba(17,22,28,0.05);
+      box-shadow: var(--shadow-panel);
+      overflow-x: auto;
     }
 
     .sticker-grid {
@@ -659,6 +815,7 @@
 
     .sticker-cell {
       background: #ffffff;
+      color: #11161c;
       border: 1px solid #ebedf0;
       border-radius: 3px;
       padding: 6px;
@@ -667,6 +824,7 @@
       align-items: center;
       justify-content: center;
       min-height: 100px;
+      width: 100%;
       box-shadow: 0 0 0 1px rgba(0,0,0,0.02);
     }
 
@@ -678,8 +836,9 @@
     .sticker-cell .cell-label {
       font-family: var(--font-mono);
       font-size: 0.68rem;
-      color: var(--ink-muted);
+      color: #4a5562;
       margin-top: 3px;
+      direction: ltr;
     }
 
     .batch-empty {
@@ -691,25 +850,26 @@
       color: var(--ink-muted);
       font-size: 0.9rem;
     }
-
-    @media (max-width: 860px) {
-      .batch-controls {
-        grid-template-columns: 1fr;
-      }
-    }
   </style>
 </head>
 <body>
 
   <header class="header-bar">
-    <h1>Barcode Label Studio</h1>
-    <div class="header-meta">1D &amp; QR Vector Symbology Engine (Code 128 / Code 39 / EAN-13 / ITF / QR Code) · <a href="https://github.com/RajwanYair/barcode-label-studio" target="_blank" rel="noopener noreferrer" style="color:var(--accent);text-decoration:none;">GitHub</a></div>
+    <div class="header-brand">
+      <h1 data-i18n="appTitle">Barcode Label Studio</h1>
+      <div class="header-meta" data-i18n="appSubtitle">1D &amp; QR Vector Symbology Engine (Code 128 / Code 39 / EAN-13 / ITF / QR Code)</div>
+    </div>
+    <div class="header-controls">
+      <button type="button" class="toolbar-btn" id="langToggleBtn" aria-label="Switch language between English and Hebrew">🌐 עברית</button>
+      <button type="button" class="toolbar-btn" id="themeToggleBtn" aria-label="Toggle dark and light mode">🌙 Dark</button>
+      <a class="toolbar-btn" href="https://github.com/RajwanYair/barcode-label-studio" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+    </div>
   </header>
 
   <!-- Tabs -->
   <nav class="tab-bar">
-    <button class="tab-btn active" data-tab="single-tab">Single Barcode</button>
-    <button class="tab-btn" data-tab="batch-tab">Batch / Sticker Sheet Print</button>
+    <button class="tab-btn active" data-tab="single-tab" data-i18n="tabSingle">Single Barcode</button>
+    <button class="tab-btn" data-tab="batch-tab" data-i18n="tabBatch">Batch / Sticker Sheet Print</button>
   </nav>
 
   <!-- ============================================== -->
@@ -720,55 +880,55 @@
       <section class="panel controls-panel">
         <div class="field-group">
           <div class="field-header">
-            <label for="barcodeInput">Value (number or text)</label>
+            <label for="barcodeInput" data-i18n="labelValue">Value (number or text)</label>
             <span id="inputTypeBadge" class="input-badge">Numeric · 10 chars</span>
           </div>
           <div class="barcode-input-wrap">
-            <input id="barcodeInput" type="text" value="4820019472" placeholder="Enter digits or text..." autocomplete="off" spellcheck="false" autofocus />
-            <button type="button" class="clear-btn" id="clearBtn" title="Clear input">Clear</button>
+            <input id="barcodeInput" class="ltr-code" type="text" value="4820019472" placeholder="Enter digits or text..." data-i18n-placeholder="placeholderValue" autocomplete="off" spellcheck="false" autofocus />
+            <button type="button" class="clear-btn" id="clearBtn" title="Clear input" data-i18n="btnClear">Clear</button>
           </div>
           <div class="presets">
-            <button type="button" class="preset-chip" data-val="4820019472" data-sym="CODE128">4820019472</button>
-            <button type="button" class="preset-chip" data-val="978020137962" data-sym="EAN13">EAN: 978020137962</button>
-            <button type="button" class="preset-chip" data-val="LOT-2026-A0" data-sym="CODE128">LOT-2026-A0</button>
-            <button type="button" class="preset-chip" data-val="SN-88419" data-sym="CODE39">Code39: SN-88419</button>
+            <button type="button" class="preset-chip ltr-code" data-val="4820019472" data-sym="CODE128">4820019472</button>
+            <button type="button" class="preset-chip ltr-code" data-val="978020137962" data-sym="EAN13">EAN: 978020137962</button>
+            <button type="button" class="preset-chip ltr-code" data-val="LOT-2026-A0" data-sym="CODE128">LOT-2026-A0</button>
+            <button type="button" class="preset-chip ltr-code" data-val="SN-88419" data-sym="CODE39">Code39: SN-88419</button>
           </div>
         </div>
         <div class="field-group">
-          <div class="field-header"><label for="symbologySelect">Symbology format</label></div>
+          <div class="field-header"><label for="symbologySelect" data-i18n="labelSymbology">Symbology format</label></div>
           <select id="symbologySelect">
-            <option value="CODE128" selected>Code 128 Auto (Numbers &amp; full ASCII)</option>
-            <option value="CODE39">Code 39 (Numbers, A–Z, - . $ / + % SPACE)</option>
-            <option value="EAN13">EAN-13 (12 or 13 digits — retail standard)</option>
-            <option value="ITF">ITF / Interleaved 2 of 5 (Even-length numeric)</option>
-            <option value="QR">QR Code (2D matrix — numbers, text, URLs)</option>
+            <option value="CODE128" data-i18n="symCode128" selected>Code 128 Auto (Numbers &amp; full ASCII)</option>
+            <option value="CODE39" data-i18n="symCode39">Code 39 (Numbers, A–Z, - . $ / + % SPACE)</option>
+            <option value="EAN13" data-i18n="symEan13">EAN-13 (12 or 13 digits — retail standard)</option>
+            <option value="ITF" data-i18n="symItf">ITF / Interleaved 2 of 5 (Even-length numeric)</option>
+            <option value="QR" data-i18n="symQr">QR Code (2D matrix — numbers, text, URLs)</option>
           </select>
         </div>
         <div class="controls-grid">
-          <div class="range-control"><div class="range-control-top"><label for="barWidth">Bar width</label><span class="range-val" id="barWidthVal">2 px</span></div><input id="barWidth" type="range" min="1" max="4" step="0.5" value="2" /></div>
-          <div class="range-control"><div class="range-control-top"><label for="barHeight">Bar height</label><span class="range-val" id="barHeightVal">90 px</span></div><input id="barHeight" type="range" min="40" max="160" step="5" value="90" /></div>
-          <div class="range-control"><div class="range-control-top"><label for="quietZone">Quiet margin</label><span class="range-val" id="quietZoneVal">16 px</span></div><input id="quietZone" type="range" min="0" max="40" step="4" value="16" /></div>
-          <div class="range-control"><div class="range-control-top"><label for="fontSize">Label size</label><span class="range-val" id="fontSizeVal">16 px</span></div><input id="fontSize" type="range" min="11" max="24" step="1" value="16" /></div>
+          <div class="range-control"><div class="range-control-top"><label for="barWidth" data-i18n="labelBarWidth">Bar width</label><span class="range-val ltr-code" id="barWidthVal">2 px</span></div><input id="barWidth" type="range" min="1" max="4" step="0.5" value="2" /></div>
+          <div class="range-control"><div class="range-control-top"><label for="barHeight" data-i18n="labelBarHeight">Bar height</label><span class="range-val ltr-code" id="barHeightVal">90 px</span></div><input id="barHeight" type="range" min="40" max="160" step="5" value="90" /></div>
+          <div class="range-control"><div class="range-control-top"><label for="quietZone" data-i18n="labelQuietZone">Quiet margin</label><span class="range-val ltr-code" id="quietZoneVal">16 px</span></div><input id="quietZone" type="range" min="0" max="40" step="4" value="16" /></div>
+          <div class="range-control"><div class="range-control-top"><label for="fontSize" data-i18n="labelFontSize">Label size</label><span class="range-val ltr-code" id="fontSizeVal">16 px</span></div><input id="fontSize" type="range" min="11" max="24" step="1" value="16" /></div>
         </div>
-        <label class="checkbox-row"><input type="checkbox" id="showText" checked /> Show human-readable value below bars</label>
+        <label class="checkbox-row"><input type="checkbox" id="showText" checked /> <span data-i18n="labelShowText">Show human-readable value below bars</span></label>
         <div class="history-section">
-          <div class="history-header"><span>Recent values</span><button type="button" class="clear-btn" id="saveHistoryBtn" style="padding:2px 8px;font-size:0.74rem;">Pin current</button></div>
+          <div class="history-header"><span data-i18n="labelRecent">Recent values</span><button type="button" class="clear-btn" id="saveHistoryBtn" data-i18n="btnPinCurrent" style="padding:2px 8px;font-size:0.74rem;">Pin current</button></div>
           <div class="history-list" id="historyList"></div>
         </div>
       </section>
       <section class="panel stage-panel">
-        <div class="error-banner" id="errorBanner" role="alert"><span id="errorText"></span><button type="button" class="fix-btn" id="autoFixBtn">Switch to Code 128</button></div>
+        <div class="error-banner" id="errorBanner" role="alert"><span id="errorText"></span><button type="button" class="fix-btn" id="autoFixBtn" data-i18n="btnSwitch128">Switch to Code 128</button></div>
         <div class="label-bed"><div class="thermal-sticker" id="stickerContainer"><svg id="barcodeSvg" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Generated barcode"></svg></div></div>
         <div class="telemetry-strip">
-          <div class="telemetry-item"><span>Encoding Mode</span><strong id="metaMode">Code 128C</strong></div>
-          <div class="telemetry-item"><span>Check Character</span><strong id="metaChecksum">Mod 103: 45</strong></div>
-          <div class="telemetry-item"><span>Total Bars / Size</span><strong id="metaGeometry">68 modules</strong></div>
+          <div class="telemetry-item"><span data-i18n="metaEncodingMode">Encoding Mode</span><strong class="ltr-code" id="metaMode">Code 128C</strong></div>
+          <div class="telemetry-item"><span data-i18n="metaCheckChar">Check Character</span><strong class="ltr-code" id="metaChecksum">Mod 103: 45</strong></div>
+          <div class="telemetry-item"><span data-i18n="metaTotalBars">Total Bars / Size</span><strong class="ltr-code" id="metaGeometry">68 modules</strong></div>
         </div>
         <div class="action-bar">
-          <button type="button" class="btn btn-primary" id="downloadPngBtn">Download PNG</button>
-          <button type="button" class="btn" id="downloadSvgBtn">Download SVG</button>
-          <button type="button" class="btn" id="copyPngBtn">Copy Image</button>
-          <button type="button" class="btn" id="printBtn">Print Label</button>
+          <button type="button" class="btn btn-primary" id="downloadPngBtn" data-i18n="btnDownloadPng">Download PNG</button>
+          <button type="button" class="btn" id="downloadSvgBtn" data-i18n="btnDownloadSvg">Download SVG</button>
+          <button type="button" class="btn" id="copyPngBtn" data-i18n="btnCopyImage">Copy Image</button>
+          <button type="button" class="btn" id="printBtn" data-i18n="btnPrintLabel">Print Label</button>
         </div>
         <div class="status-toast" id="statusToast" aria-live="polite"></div>
       </section>
@@ -784,99 +944,99 @@
       <div class="batch-controls">
         <!-- 1. Manual text list -->
         <div class="batch-source-panel">
-          <h3>Text List (one per line)</h3>
-          <textarea id="batchTextarea" placeholder="4820019472&#10;978020137962&#10;LOT-2026-A0&#10;SN-88419&#10;..." rows="5"></textarea>
+          <h3 data-i18n="batchTextTitle">Text List (one per line)</h3>
+          <textarea id="batchTextarea" class="ltr-code" placeholder="4820019472&#10;978020137962&#10;LOT-2026-A0&#10;SN-88419&#10;..." rows="5"></textarea>
         </div>
         <!-- 2. Number range -->
         <div class="batch-source-panel">
-          <h3>Number Range</h3>
+          <h3 data-i18n="batchRangeTitle">Number Range</h3>
           <div class="range-inputs">
-            <input type="text" id="rangeFrom" value="4820019472" placeholder="From" />
-            <span>to</span>
-            <input type="text" id="rangeTo" value="4820019482" placeholder="To" />
+            <input type="text" id="rangeFrom" class="ltr-code" value="4820019472" placeholder="From" data-i18n-placeholder="placeholderFrom" />
+            <span data-i18n="labelRangeTo">to</span>
+            <input type="text" id="rangeTo" class="ltr-code" value="4820019482" placeholder="To" data-i18n-placeholder="placeholderTo" />
           </div>
-          <button type="button" class="btn btn-primary" id="rangeGenBtn" style="width:100%;">Generate Range</button>
-          <div style="margin-top:6px;font-size:0.72rem;color:var(--ink-muted);">
-            Generates sequential numbers (inclusive). Prefix/suffix strings also work: e.g. <code>SN-100 to SN-110</code>.
+          <button type="button" class="btn btn-primary" id="rangeGenBtn" data-i18n="btnGenerateRange" style="width:100%;">Generate Range</button>
+          <div data-i18n="batchRangeHint" style="margin-top:6px;font-size:0.72rem;color:var(--ink-muted);">
+            Generates sequential numbers (inclusive). Prefix/suffix strings also work: e.g. SN-100 to SN-110.
           </div>
         </div>
         <!-- 3. File upload (CSV / Excel / text) -->
         <div class="batch-source-panel">
-          <h3>Import File</h3>
+          <h3 data-i18n="batchFileTitle">Import File</h3>
           <div class="file-drop-area" id="fileDropArea">
-            Drop file here or click to browse
+            <span data-i18n="batchFileDrop">Drop file here or click to browse</span>
             <input type="file" id="fileInput" accept=".txt,.csv,.tsv,.xlsx,.xls" />
           </div>
-          <div class="file-name" id="fileNameDisplay"></div>
-          <div style="margin-top:6px;font-size:0.72rem;color:var(--ink-muted);">
-            Supported: .txt (one per line), .csv/.tsv (first column), .xlsx/.xls (first column). Excel parsing works offline via SheetJS.
+          <div class="file-name ltr-code" id="fileNameDisplay"></div>
+          <div data-i18n="batchFileHint" style="margin-top:6px;font-size:0.72rem;color:var(--ink-muted);">
+            Supported: .txt (one per line), .csv/.tsv (first column), .xlsx/.xls (first column).
           </div>
         </div>
       </div>
 
       <!-- Sticker sheet format selector -->
       <div class="sticker-format-row">
-        <div class="field-header"><label for="stickerFormat">Sticker sheet format</label></div>
+        <div class="field-header"><label for="stickerFormat" data-i18n="labelSheetFormat">Sticker sheet format</label></div>
         <select id="stickerFormat">
-          <option value="a4-3x8" selected>A4 — 3 cols × 8 rows = 24 labels (63.5 × 33.9 mm)</option>
-          <option value="a4-2x7">A4 — 2 cols × 7 rows = 14 labels (99.1 × 33.9 mm)</option>
-          <option value="a4-4x10">A4 — 4 cols × 10 rows = 40 labels (48.5 × 16.9 mm)</option>
-          <option value="letter-3x10">US Letter — 3 cols × 10 rows = 30 labels (66.0 × 25.4 mm)</option>
-          <option value="letter-2x7">US Letter — 2 cols × 7 rows = 14 labels (101.6 × 33.9 mm)</option>
-          <option value="flow">Flow (no columns — full-width rows)</option>
+          <option value="a4-3x8" data-i18n="fmtA4_3x8" selected>A4 — 3 cols × 8 rows = 24 labels (63.5 × 33.9 mm)</option>
+          <option value="a4-2x7" data-i18n="fmtA4_2x7">A4 — 2 cols × 7 rows = 14 labels (99.1 × 33.9 mm)</option>
+          <option value="a4-4x10" data-i18n="fmtA4_4x10">A4 — 4 cols × 10 rows = 40 labels (48.5 × 16.9 mm)</option>
+          <option value="letter-3x10" data-i18n="fmtLetter_3x10">US Letter — 3 cols × 10 rows = 30 labels (66.0 × 25.4 mm)</option>
+          <option value="letter-2x7" data-i18n="fmtLetter_2x7">US Letter — 2 cols × 7 rows = 14 labels (101.6 × 33.9 mm)</option>
+          <option value="flow" data-i18n="fmtFlow">Flow (no columns — full-width rows)</option>
         </select>
-        <button type="button" class="btn" id="batchRefreshBtn">Refresh Sheet</button>
+        <button type="button" class="btn" id="batchRefreshBtn" data-i18n="btnRefreshSheet">Refresh Sheet</button>
       </div>
 
       <!-- Symbology for batch -->
       <div class="sticker-format-row" style="margin-top:-8px;">
-        <div class="field-header"><label for="batchSymbology">Symbology</label></div>
+        <div class="field-header"><label for="batchSymbology" data-i18n="labelBatchSymbology">Symbology</label></div>
         <select id="batchSymbology">
-          <option value="CODE128" selected>Code 128 Auto</option>
-          <option value="CODE39">Code 39</option>
-          <option value="EAN13">EAN-13</option>
-          <option value="ITF">ITF / 2 of 5</option>
-          <option value="QR">QR Code (2D)</option>
+          <option value="CODE128" data-i18n="batchSymCode128" selected>Code 128 Auto</option>
+          <option value="CODE39" data-i18n="batchSymCode39">Code 39</option>
+          <option value="EAN13" data-i18n="batchSymEan13">EAN-13</option>
+          <option value="ITF" data-i18n="batchSymItf">ITF / 2 of 5</option>
+          <option value="QR" data-i18n="batchSymQr">QR Code (2D)</option>
         </select>
-        <label class="checkbox-row" style="margin:0 0 0 12px;"><input type="checkbox" id="batchShowText" checked /> Show labels</label>
+        <label class="checkbox-row" style="margin:0 12px;"><input type="checkbox" id="batchShowText" checked /> <span data-i18n="labelBatchShowText">Show labels</span></label>
       </div>
 
       <!-- Logo upload -->
       <div class="sticker-format-row" style="margin-top:-8px;">
-        <div class="field-header"><label for="logoInput">Company Logo (optional)</label></div>
+        <div class="field-header"><label for="logoInput" data-i18n="labelLogo">Company Logo (optional)</label></div>
         <input type="file" id="logoInput" accept="image/png,image/jpeg,image/svg+xml" style="max-width:260px;font-family:var(--font-sans);font-size:0.82rem;" />
-        <button type="button" class="clear-btn" id="logoClearBtn" style="font-size:0.74rem;">Clear</button>
-        <span id="logoStatus" style="font-size:0.74rem;color:var(--ink-muted);"></span>
+        <button type="button" class="clear-btn" id="logoClearBtn" data-i18n="btnClear" style="font-size:0.74rem;">Clear</button>
+        <span id="logoStatus" class="ltr-code" style="font-size:0.74rem;color:var(--ink-muted);"></span>
       </div>
 
       <!-- Custom sticker text -->
       <div class="sticker-format-row" style="margin-top:-8px;">
-        <div class="field-header"><label for="customStickerText">Sticker Text (optional)</label></div>
-        <input type="text" id="customStickerText" placeholder="e.g. Property of Acme Corp" style="width:240px;font-family:var(--font-sans);font-size:0.82rem;" />
+        <div class="field-header"><label for="customStickerText" data-i18n="labelStickerText">Sticker Text (optional)</label></div>
+        <input type="text" id="customStickerText" placeholder="e.g. Property of Acme Corp" data-i18n-placeholder="placeholderStickerText" style="width:240px;font-family:var(--font-sans);font-size:0.82rem;" />
         <select id="customTextPosition" style="width:auto;min-width:100px;">
-          <option value="top" selected>Above barcode</option>
-          <option value="bottom">Below barcode</option>
+          <option value="top" data-i18n="posTop" selected>Above barcode</option>
+          <option value="bottom" data-i18n="posBottom">Below barcode</option>
         </select>
       </div>
 
       <!-- Stats & Export -->
       <div class="batch-stats" id="batchStats">
-        <span>Values: <strong id="batchCount">0</strong></span>
-        <span>Pages: <strong id="batchPages">0</strong></span>
-        <span>Errors: <strong id="batchErrors" style="color:var(--danger);">0</strong></span>
+        <span><span data-i18n="statValues">Values:</span> <strong id="batchCount">0</strong></span>
+        <span><span data-i18n="statPages">Pages:</span> <strong id="batchPages">0</strong></span>
+        <span><span data-i18n="statErrors">Errors:</span> <strong id="batchErrors" style="color:var(--danger);">0</strong></span>
       </div>
 
       <div class="batch-export-bar">
-        <button type="button" class="btn btn-primary" id="batchDownloadPng">PNG Images (ZIP)</button>
-        <button type="button" class="btn" id="batchDownloadSvg">SVG Images (one file)</button>
-        <button type="button" class="btn" id="batchDownloadPdf">PDF (print-ready)</button>
-        <button type="button" class="btn" id="batchPrint">Print to Printer</button>
+        <button type="button" class="btn btn-primary" id="batchDownloadPng" data-i18n="btnBatchPng">PNG Images (ZIP)</button>
+        <button type="button" class="btn" id="batchDownloadSvg" data-i18n="btnBatchSvg">SVG Images (one file)</button>
+        <button type="button" class="btn" id="batchDownloadPdf" data-i18n="btnBatchPdf">PDF (print-ready)</button>
+        <button type="button" class="btn" id="batchPrint" data-i18n="btnBatchPrint">Print to Printer</button>
       </div>
       <div class="status-toast" id="batchStatusToast" aria-live="polite"></div>
 
       <!-- Sticker Sheet Rendering -->
       <div id="stickerSheetContainer">
-        <div class="batch-empty" id="batchEmpty">Enter values above — text list, number range, or file — then click Refresh Sheet.</div>
+        <div class="batch-empty" id="batchEmpty" data-i18n="batchEmptyMsg">Enter values above — text list, number range, or file — then click Refresh Sheet.</div>
         <div class="sticker-sheet" id="stickerSheet" style="display:none;">
           <div class="sticker-grid" id="stickerGrid"></div>
         </div>
@@ -1567,6 +1727,260 @@
     }
 
     // =========================================================================
+    // I18N (ENGLISH / HEBREW) & THEME (LIGHT / DARK)
+    // =========================================================================
+    const I18N = {
+      en: {
+        appTitle: "Barcode Label Studio",
+        appSubtitle: "1D & QR Vector Symbology Engine (Code 128 / Code 39 / EAN-13 / ITF / QR Code)",
+        tabSingle: "Single Barcode",
+        tabBatch: "Batch / Sticker Sheet Print",
+        labelValue: "Value (number or text)",
+        placeholderValue: "Enter digits or text...",
+        btnClear: "Clear",
+        labelSymbology: "Symbology format",
+        symCode128: "Code 128 Auto (Numbers & full ASCII)",
+        symCode39: "Code 39 (Numbers, A–Z, - . $ / + % SPACE)",
+        symEan13: "EAN-13 (12 or 13 digits — retail standard)",
+        symItf: "ITF / Interleaved 2 of 5 (Even-length numeric)",
+        symQr: "QR Code (2D matrix — numbers, text, URLs)",
+        labelBarWidth: "Bar width",
+        labelBarHeight: "Bar height",
+        labelQuietZone: "Quiet margin",
+        labelFontSize: "Label size",
+        labelShowText: "Show human-readable value below bars",
+        labelRecent: "Recent values",
+        btnPinCurrent: "Pin current",
+        btnSwitch128: "Switch to Code 128",
+        useValuePrefix: "Use",
+        metaEncodingMode: "Encoding Mode",
+        metaCheckChar: "Check Character",
+        metaTotalBars: "Total Bars / Size",
+        btnDownloadPng: "Download PNG",
+        btnDownloadSvg: "Download SVG",
+        btnCopyImage: "Copy Image",
+        btnPrintLabel: "Print Label",
+        batchTextTitle: "Text List (one per line)",
+        batchRangeTitle: "Number Range",
+        placeholderFrom: "From",
+        labelRangeTo: "to",
+        placeholderTo: "To",
+        btnGenerateRange: "Generate Range",
+        batchRangeHint: "Generates sequential numbers (inclusive). Prefix/suffix strings also work: e.g. SN-100 to SN-110.",
+        batchFileTitle: "Import File",
+        batchFileDrop: "Drop file here or click to browse",
+        batchFileHint: "Supported: .txt (one per line), .csv/.tsv (first column), .xlsx/.xls (first column).",
+        labelSheetFormat: "Sticker sheet format",
+        fmtA4_3x8: "A4 — 3 cols × 8 rows = 24 labels (63.5 × 33.9 mm)",
+        fmtA4_2x7: "A4 — 2 cols × 7 rows = 14 labels (99.1 × 33.9 mm)",
+        fmtA4_4x10: "A4 — 4 cols × 10 rows = 40 labels (48.5 × 16.9 mm)",
+        fmtLetter_3x10: "US Letter — 3 cols × 10 rows = 30 labels (66.0 × 25.4 mm)",
+        fmtLetter_2x7: "US Letter — 2 cols × 7 rows = 14 labels (101.6 × 33.9 mm)",
+        fmtFlow: "Flow (no columns — full-width rows)",
+        btnRefreshSheet: "Refresh Sheet",
+        labelBatchSymbology: "Symbology",
+        batchSymCode128: "Code 128 Auto",
+        batchSymCode39: "Code 39",
+        batchSymEan13: "EAN-13",
+        batchSymItf: "ITF / 2 of 5",
+        batchSymQr: "QR Code (2D)",
+        labelBatchShowText: "Show labels",
+        labelLogo: "Company Logo (optional)",
+        labelStickerText: "Sticker Text (optional)",
+        placeholderStickerText: "e.g. Property of Acme Corp",
+        posTop: "Above barcode",
+        posBottom: "Below barcode",
+        statValues: "Values:",
+        statPages: "Pages:",
+        statErrors: "Errors:",
+        btnBatchPng: "PNG Images (ZIP)",
+        btnBatchSvg: "SVG Images (one file)",
+        btnBatchPdf: "PDF (print-ready)",
+        btnBatchPrint: "Print to Printer",
+        batchEmptyMsg: "Enter values above — text list, number range, or file — then click Refresh Sheet.",
+        badgeEmpty: "Empty",
+        badgeNumeric: "Numeric",
+        badgeText: "Text",
+        charSingular: "char",
+        charPlural: "chars",
+        modulesWord: "modules",
+        toastPinned: "Pinned to recent values",
+        toastSvg: "Downloaded SVG",
+        toastPng: "Downloaded PNG",
+        toastCopied: "Copied to clipboard",
+        toastCopyFail: "Clipboard image write unavailable",
+        themeDarkBtn: "🌙 Dark",
+        themeLightBtn: "☀️ Light",
+        langToggleLabel: "🌐 עברית"
+      },
+      he: {
+        appTitle: "סטודיו לתוויות ברקוד",
+        appSubtitle: "מנוע וקטורי לברקודים 1D וקוד QR (Code 128 / Code 39 / EAN-13 / ITF / QR)",
+        tabSingle: "ברקוד בודד",
+        tabBatch: "הדפסת גיליון מדבקות / אצווה",
+        labelValue: "ערך הברקוד (מספר או טקסט)",
+        placeholderValue: "הזן ספרות או טקסט באנגלית...",
+        btnClear: "נקה",
+        labelSymbology: "פורמט סימבולוגיה (תקן ברקוד)",
+        symCode128: "Code 128 אוטומטי (מספרים וטקסט ASCII מלא)",
+        symCode39: "Code 39 (מספרים, A–Z, רווח וסימנים - . $ / + %)",
+        symEan13: "EAN-13 (תקן קמעונאי — 12 או 13 ספרות)",
+        symItf: "ITF / Interleaved 2 of 5 (מספרי באורך זוגי)",
+        symQr: "קוד QR דו-ממדי (מספרים, טקסט, כתובות אתרים)",
+        labelBarWidth: "רוחב פס",
+        labelBarHeight: "גובה ברקוד",
+        labelQuietZone: "שוליים שקטים",
+        labelFontSize: "גודל גופן",
+        labelShowText: "הצג טקסט קריא מתחת לברקוד",
+        labelRecent: "ערכים אחרונים",
+        btnPinCurrent: "שמור נוכחי",
+        btnSwitch128: "החלף ל-Code 128",
+        useValuePrefix: "השתמש ב-",
+        metaEncodingMode: "מצב קידוד",
+        metaCheckChar: "ספרת ביקורת",
+        metaTotalBars: "סה״כ מודולים / גודל",
+        btnDownloadPng: "הורד PNG",
+        btnDownloadSvg: "הורד SVG",
+        btnCopyImage: "העתק תמונה",
+        btnPrintLabel: "הדפס תווית",
+        batchTextTitle: "רשימת טקסט (ערך בכל שורה)",
+        batchRangeTitle: "טווח מספרים רציף",
+        placeholderFrom: "מערך",
+        labelRangeTo: "עד",
+        placeholderTo: "לערך",
+        btnGenerateRange: "צור טווח",
+        batchRangeHint: "מייצר סדרה עוקבת (כולל קצוות). תומך גם בקידומת: למשל SN-100 עד SN-110.",
+        batchFileTitle: "ייבוא קובץ",
+        batchFileDrop: "גרור קובץ לכאן או לחץ לבחירה",
+        batchFileHint: "נתמכים: .txt (שורה לכל ערך), .csv/.tsv (עמודה ראשונה), .xlsx/.xls (עמודה ראשונה).",
+        labelSheetFormat: "פריסת גיליון מדבקות",
+        fmtA4_3x8: "A4 — 3 עמודות × 8 שורות = 24 מדבקות (63.5 × 33.9 מ״מ)",
+        fmtA4_2x7: "A4 — 2 עמודות × 7 שורות = 14 מדבקות (99.1 × 33.9 מ״מ)",
+        fmtA4_4x10: "A4 — 4 עמודות × 10 שורות = 40 מדבקות (48.5 × 16.9 מ״מ)",
+        fmtLetter_3x10: "US Letter — 3 עמודות × 10 שורות = 30 מדבקות (66.0 × 25.4 מ״מ)",
+        fmtLetter_2x7: "US Letter — 2 עמודות × 7 שורות = 14 מדבקות (101.6 × 33.9 מ״מ)",
+        fmtFlow: "זרימה רציפה (ללא עמודות — שורות ברוחב מלא)",
+        btnRefreshSheet: "רענן גיליון",
+        labelBatchSymbology: "תקן ברקוד",
+        batchSymCode128: "Code 128 אוטומטי",
+        batchSymCode39: "Code 39",
+        batchSymEan13: "EAN-13",
+        batchSymItf: "ITF / 2 of 5",
+        batchSymQr: "קוד QR (דו-ממדי)",
+        labelBatchShowText: "הצג כיתוב",
+        labelLogo: "לוגו חברה (אופציונלי)",
+        labelStickerText: "טקסט קבוע למדבקה (אופציונלי)",
+        placeholderStickerText: "לדוגמה: רכוש חברת אקמי",
+        posTop: "מעל הברקוד",
+        posBottom: "מתחת לברקוד",
+        statValues: "ערכים:",
+        statPages: "עמודים:",
+        statErrors: "שגיאות:",
+        btnBatchPng: "תמונות PNG",
+        btnBatchSvg: "קובץ SVG מאוחד",
+        btnBatchPdf: "PDF (מוכן להדפסה)",
+        btnBatchPrint: "הדפס למדפסת",
+        batchEmptyMsg: "הזן ערכים למעלה — מרשימת טקסט, טווח מספרים או קובץ — ולחץ על רענן גיליון.",
+        badgeEmpty: "ריק",
+        badgeNumeric: "מספרי",
+        badgeText: "טקסט",
+        charSingular: "תו",
+        charPlural: "תווים",
+        modulesWord: "מודולים",
+        toastPinned: "נשמר בערכים אחרונים",
+        toastSvg: "קובץ SVG הורד",
+        toastPng: "קובץ PNG הורד",
+        toastCopied: "התמונה הועתקה ללוח",
+        toastCopyFail: "העתקת תמונה ללוח אינה זמינה בדפדפן זה",
+        themeDarkBtn: "🌙 מצב כהה",
+        themeLightBtn: "☀️ מצב בהיר",
+        langToggleLabel: "🌐 English"
+      }
+    };
+
+    let currentLang = "en";
+    let currentTheme = "light";
+
+    const langToggleBtn = document.getElementById("langToggleBtn");
+    const themeToggleBtn = document.getElementById("themeToggleBtn");
+
+    function getLanguage() {
+      return currentLang;
+    }
+
+    function getTheme() {
+      return currentTheme;
+    }
+
+    function updateToolbarControls() {
+      const dict = I18N[currentLang] || I18N.en;
+      if (langToggleBtn) {
+        langToggleBtn.textContent = dict.langToggleLabel;
+      }
+      if (themeToggleBtn) {
+        themeToggleBtn.textContent = currentTheme === "dark" ? dict.themeLightBtn : dict.themeDarkBtn;
+      }
+    }
+
+    function setTheme(theme) {
+      currentTheme = theme === "dark" ? "dark" : "light";
+      const rootEl = document.documentElement;
+      if (rootEl && rootEl.setAttribute) {
+        rootEl.setAttribute("data-theme", currentTheme);
+      }
+      try {
+        if (typeof localStorage !== "undefined") {
+          localStorage.setItem("bls_theme", currentTheme);
+        }
+      } catch (e) {}
+      updateToolbarControls();
+      return currentTheme;
+    }
+
+    function setLanguage(lang) {
+      currentLang = lang === "he" ? "he" : "en";
+      const dict = I18N[currentLang];
+      const dir = currentLang === "he" ? "rtl" : "ltr";
+      const rootEl = document.documentElement;
+      if (rootEl && rootEl.setAttribute) {
+        rootEl.setAttribute("lang", currentLang);
+        rootEl.setAttribute("dir", dir);
+      }
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (key && dict[key]) el.textContent = dict[key];
+      });
+      document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+        const key = el.getAttribute("data-i18n-placeholder");
+        if (key && dict[key]) {
+          el.placeholder = dict[key];
+          if (el.setAttribute) el.setAttribute("placeholder", dict[key]);
+        }
+      });
+      try {
+        if (typeof localStorage !== "undefined") {
+          localStorage.setItem("bls_lang", currentLang);
+        }
+      } catch (e) {}
+      updateToolbarControls();
+      if (typeof renderBarcode === "function" && els && els.input) {
+        renderBarcode();
+      }
+      return currentLang;
+    }
+
+    if (langToggleBtn) {
+      langToggleBtn.addEventListener("click", () => {
+        setLanguage(currentLang === "en" ? "he" : "en");
+      });
+    }
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener("click", () => {
+        setTheme(currentTheme === "light" ? "dark" : "light");
+      });
+    }
+
+    // =========================================================================
     // TAB SWITCHING
     // =========================================================================
     let currentLogoDataUrl = null;
@@ -1629,16 +2043,18 @@
       els.historyList.innerHTML = "";
       recentValues.forEach(val => {
         const btn = document.createElement("button");
-        btn.type = "button"; btn.className = "history-pill"; btn.textContent = val;
+        btn.type = "button"; btn.className = "history-pill ltr-code"; btn.textContent = val;
         btn.addEventListener("click", () => { els.input.value = val; renderBarcode(); });
         els.historyList.appendChild(btn);
       });
     }
 
     function renderBarcode() {
+      const dict = I18N[currentLang] || I18N.en;
       const raw = els.input.value;
       const isNumeric = /^\d+$/.test(raw) && raw.length > 0;
-      els.badge.textContent = raw.length === 0 ? "Empty" : `${isNumeric ? "Numeric" : "Text"} · ${raw.length} char${raw.length === 1 ? "" : "s"}`;
+      const charWord = raw.length === 1 ? dict.charSingular : dict.charPlural;
+      els.badge.textContent = raw.length === 0 ? dict.badgeEmpty : `${isNumeric ? dict.badgeNumeric : dict.badgeText} · ${raw.length} ${charWord}`;
 
       const scale = parseFloat(els.barWidth.value);
       const height = parseInt(els.barHeight.value, 10);
@@ -1659,11 +2075,11 @@
         els.errorText.textContent = e.error;
         if (e.fixValue) {
           els.autoFixBtn.style.display = "inline-block";
-          els.autoFixBtn.textContent = `Use ${e.fixValue}`;
+          els.autoFixBtn.textContent = `${dict.useValuePrefix} ${e.fixValue}`;
           pendingFixAction = () => { els.input.value = e.fixValue; renderBarcode(); };
         } else if (e.canSwitchTo128) {
           els.autoFixBtn.style.display = "inline-block";
-          els.autoFixBtn.textContent = "Switch to Code 128";
+          els.autoFixBtn.textContent = dict.btnSwitch128;
           pendingFixAction = () => { els.symbology.value = "CODE128"; renderBarcode(); };
         } else {
           els.autoFixBtn.style.display = "none"; pendingFixAction = null;
@@ -1685,7 +2101,7 @@
       els.metaChecksum.textContent = built.result.checksumLabel;
       els.metaGeometry.textContent = built.isQr
         ? `QR ${built.result.qrSize}×${built.result.qrSize} (${Math.round(built.totalWidth)}×${Math.round(built.totalHeight)} px)`
-        : `${built.result.bits.length} modules (${Math.round(built.totalWidth)}×${Math.round(built.totalHeight)} px)`;
+        : `${built.result.bits.length} ${dict.modulesWord} (${Math.round(built.totalWidth)}×${Math.round(built.totalHeight)} px)`;
     }
 
     function svgElementToCanvas(svgEl, dpr, callback) {
@@ -2083,6 +2499,25 @@
     // Silence initial render — only show when tab is active
     // (if batch tab becomes active, refreshBatchSheet() is called by tab switch)
 
+    // Restore persisted theme & language preferences (or system dark mode)
+    (function initPreferences() {
+      let savedTheme = "light";
+      let savedLang = "en";
+      try {
+        if (typeof localStorage !== "undefined") {
+          const t = localStorage.getItem("bls_theme");
+          if (t === "dark" || t === "light") savedTheme = t;
+          else if (typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+            savedTheme = "dark";
+          }
+          const l = localStorage.getItem("bls_lang");
+          if (l === "he" || l === "en") savedLang = l;
+        }
+      } catch (e) {}
+      setTheme(savedTheme);
+      setLanguage(savedLang);
+    })();
+
     if (typeof globalThis !== "undefined") {
       globalThis.__BARCODE_API__ = {
         CODE128_PATTERNS,
@@ -2103,7 +2538,12 @@
         qrTerminateAndPad,
         qrEncodeAlpha,
         qrEncodeByte,
-        QR_VERSION_INFO
+        QR_VERSION_INFO,
+        I18N,
+        setLanguage,
+        getLanguage,
+        setTheme,
+        getTheme
       };
     }
 
