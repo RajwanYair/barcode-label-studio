@@ -11,13 +11,13 @@ A clear and concise description of what went wrong.
 
 ## Sample Input & Symbology
 - **Input value(s)**: e.g. `4820019472` or `LOT-2026-A0`
-- **Symbology**: Code 128 / Code 39 / EAN-13 / ITF
-- **Mode**: Single Barcode / Batch Sticker Sheet (`A4 3x8`, `US Letter 3x10`, etc.)
+- **Symbology**: Code 128 / Code 39 / EAN-13 / ITF / QR Code
+- **Mode**: Single Barcode / Batch Sticker Sheet
 
 ## Steps to Reproduce
 1. Open `index.html`
-2. Select '...'
-3. Enter '...'
+2. Select ...
+3. Enter ...
 4. See error
 
 ## Expected Behavior
