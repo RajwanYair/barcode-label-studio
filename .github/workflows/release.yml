@@ -1,0 +1,73 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing release tag to build & attach assets for (e.g. v1.0.0)"
+        required: true
+        default: "v1.0.0"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Verify Gate & Publish Release Assets
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run Automated Test & Meta-Guard Suite
+        run: npm test
+
+      - name: Package Single-File HTML, Offline Bundle & SHA-256 Checksums
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          TAG="${INPUT_TAG:-${GITHUB_REF_NAME}}"
+          mkdir -p release-assets
+          cp index.html release-assets/barcode-label-studio.html
+          zip -r "release-assets/barcode-label-studio-${TAG}.zip" \
+            index.html README.md SPEC.md ROADMAP.md CHANGELOG.md LICENSE assets/
+          (
+            cd release-assets
+            sha256sum barcode-label-studio.html "barcode-label-studio-${TAG}.zip" > SHA256SUMS.txt
+          )
+          cat release-assets/SHA256SUMS.txt
+
+      - name: Attach Distributable Assets to GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          TAG="${INPUT_TAG:-${GITHUB_REF_NAME}}"
+          if gh release view "${TAG}" >/dev/null 2>&1; then
+            gh release upload "${TAG}" release-assets/* --clobber
+          else
+            gh release create "${TAG}" release-assets/* \
+              --title "Barcode Label Studio ${TAG}" \
+              --generate-notes
+          fi
+          {
+            echo "### 📦 Release Assets Published for \`${TAG}\`"
+            echo "\`\`\`text"
+            cat release-assets/SHA256SUMS.txt
+            echo "\`\`\`"
+          } >> "$GITHUB_STEP_SUMMARY"

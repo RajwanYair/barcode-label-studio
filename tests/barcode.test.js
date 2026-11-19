@@ -223,11 +223,17 @@ describe("Meta-Guard: 100% Function & Export Coverage Gate", () => {
       "QR_ALIGNMENT_POS",
       "QR_ECI_ALNUM",
       "STICKER_LAYOUTS",
-      "I18N"
+      "I18N",
+      "CRC32_TABLE"
     ];
     for (const name of requiredConstants) {
       assert.ok(api[name] !== undefined && api[name] !== null, `Missing exported constant: ${name}`);
     }
+    assert.equal(api.CRC32_TABLE.length, 256);
+    assert.equal(api.STICKER_LAYOUTS["a4-2x7"].labelH, "38.1mm");
+    assert.equal(api.STICKER_LAYOUTS["a4-4x10"].labelH, "25.4mm");
+    assert.equal(api.STICKER_LAYOUTS["letter-3x10"].labelW, "66.7mm");
+    assert.equal(api.STICKER_LAYOUTS["flow"].labelH, "42.0mm");
     assert.equal(api.CODE39_CHARS.length, 43);
     assert.equal(Object.keys(api.CODE39_MAP).length, 44); // 43 chars + '*'
     assert.equal(api.EAN_L.length, 10);
@@ -279,7 +285,18 @@ describe("Repository Configs, Workflows, Documentation & SVG Assets Integrity", 
       "CHANGELOG.md",
       ".gitignore",
       ".nojekyll",
+      ".vscode/settings.json",
+      ".vscode/tasks.json",
+      ".vscode/launch.json",
+      ".vscode/extensions.json",
+      ".github/copilot-instructions.md",
+      ".github/prompts/add-symbology.prompt.md",
+      ".github/prompts/verify-release-and-ci.prompt.md",
+      ".github/prompts/audit-roadmap-and-issues.prompt.md",
       ".github/workflows/ci.yml",
+      ".github/workflows/release.yml",
+      ".github/dependabot.yml",
+      ".github/ISSUE_TEMPLATE/config.yml",
       ".github/ISSUE_TEMPLATE/bug_report.md",
       ".github/ISSUE_TEMPLATE/feature_request.md",
       ".github/PULL_REQUEST_TEMPLATE.md",
@@ -321,7 +338,53 @@ describe("Repository Configs, Workflows, Documentation & SVG Assets Integrity", 
     assert.match(ciYaml, /concurrency:/);
     assert.match(ciYaml, /cancel-in-progress:\s*true/);
     assert.match(ciYaml, /fetch-depth:\s*1/);
+    assert.match(ciYaml, /node-version:\s*\[20,\s*22\]/);
     assert.match(ciYaml, /npm test/);
+  });
+
+  test(".github/workflows/release.yml packages standalone HTML, ZIP archive, and SHA-256 checksums", () => {
+    const releaseYaml = readRepoFile(".github/workflows/release.yml");
+    assert.match(releaseYaml, /tags:/);
+    assert.match(releaseYaml, /v\*\.\*\.\*/);
+    assert.match(releaseYaml, /workflow_dispatch:/);
+    assert.match(releaseYaml, /contents:\s*write/);
+    assert.match(releaseYaml, /npm test/);
+    assert.match(releaseYaml, /barcode-label-studio\.html/);
+    assert.match(releaseYaml, /SHA256SUMS\.txt/);
+    assert.match(releaseYaml, /gh release upload/);
+  });
+
+  test("VS Code (.vscode/*) and GitHub Copilot Chat (.github/copilot-instructions.md, .github/prompts/*) configs are valid", () => {
+    const settings = JSON.parse(readRepoFile(".vscode/settings.json"));
+    const tasks = JSON.parse(readRepoFile(".vscode/tasks.json"));
+    const launch = JSON.parse(readRepoFile(".vscode/launch.json"));
+    const extensions = JSON.parse(readRepoFile(".vscode/extensions.json"));
+
+    assert.equal(settings["github.copilot.chat.codeGeneration.useInstructionFiles"], true);
+    assert.equal(settings["chat.promptFiles"], true);
+    assert.ok(settings["chat.promptFilesLocations"][".github/prompts"]);
+    assert.ok(settings["chat.instructionsFilesLocations"][".github/copilot-instructions.md"]);
+
+    assert.ok(Array.isArray(tasks.tasks) && tasks.tasks.length >= 3);
+    assert.ok(tasks.tasks.some(t => t.command === "npm test"));
+    assert.ok(Array.isArray(launch.configurations) && launch.configurations.length >= 2);
+    assert.ok(Array.isArray(extensions.recommendations) && extensions.recommendations.includes("GitHub.copilot-chat"));
+
+    const copilotInst = readRepoFile(".github/copilot-instructions.md");
+    assert.match(copilotInst, /__BARCODE_API__/);
+    assert.match(copilotInst, /npm test/);
+  });
+
+  test("ROADMAP.md tracks Sprints 1–6, DevEx tasks (DX-T1..DX-T4), and Issues to Solve (ISS-01..ISS-08)", () => {
+    const roadmap = readRepoFile("ROADMAP.md");
+    for (let i = 1; i <= 8; i++) {
+      const code = `ISS-0${i}`;
+      assert.match(roadmap, new RegExp(code), `Expected tracked issue ${code} in ROADMAP.md`);
+    }
+    for (let d = 1; d <= 4; d++) {
+      const dxCode = `DX-T${d}`;
+      assert.match(roadmap, new RegExp(dxCode), `Expected DevEx task ${dxCode} in ROADMAP.md`);
+    }
   });
 
   test("All 5 SVG assets in assets/ are well-formed vector diagrams with accessibility titles", () => {
@@ -554,6 +617,9 @@ describe("QR Code Encoder & GF(256) Reed-Solomon Helpers", () => {
     const byteBits = api.qrEncodeByte("Hi");
     assert.equal(byteBits.length, 16);
 
+    const utf8HebBits = api.qrEncodeByte("אב");
+    assert.equal(utf8HebBits.length, 32, "Expected 4 UTF-8 bytes (32 bits) for 2 Hebrew chars");
+
     const padded = api.qrTerminateAndPad("01000000", 4);
     assert.equal(padded.length, 32);
     assert.ok(padded.includes("11101100"), "Expected 0xEC pad codeword");
@@ -565,6 +631,10 @@ describe("QR Code Encoder & GF(256) Reed-Solomon Helpers", () => {
     const placed = api.qrPlaceModules(1, interleaved, 1);
     assert.equal(placed.size, 21);
     assert.equal(placed.modules.length, 21);
+    // Verify ISO/IEC 18004 BCH(15,5) format bits for ECL M + Mask 0 (0x5412) are written
+    assert.equal(placed.modules[8][1], 1);
+    assert.equal(placed.modules[8][4], 1);
+    assert.equal(placed.modules[placed.size - 2][8], 1);
   });
 
   test("EncodeQR produces valid v1 and v2+ QR matrices and rejects empty or >v6 payloads", () => {
@@ -576,6 +646,10 @@ describe("QR Code Encoder & GF(256) Reed-Solomon Helpers", () => {
     const res2 = api.encodeQR("https://rajwanyair.github.io/barcode-label-studio/");
     assert.equal(res2.error, undefined);
     assert.ok(res2.qrSize > 21);
+
+    const resHeb = api.encodeQR("ברקוד-2026");
+    assert.equal(resHeb.error, undefined);
+    assert.ok(resHeb.qrSize >= 21);
 
     // Finder pattern check
     const m = res1.qrModules;
@@ -645,13 +719,25 @@ describe("SVG Compositor, Custom Text, Logo Overlay & Canvas Helpers", () => {
     assert.equal(renderedCanvas.height, 180);
   });
 
-  test("safeFileSlug sanitizes filenames and parseNumericSuffix parses serial ranges", () => {
+  test("safeFileSlug sanitizes filenames, parseNumericSuffix parses serial ranges, and buildZipBlob creates valid PKZIP archives", () => {
     assert.equal(api.safeFileSlug("SN/100:200?test"), "SN_100_200_test");
     assert.equal(api.safeFileSlug(""), "barcode");
     assert.equal(api.safeFileSlug("A".repeat(80)).length, 40);
 
     assert.deepEqual({ ...api.parseNumericSuffix("SN-00105") }, { prefix: "SN-", num: 105, digits: 5 });
     assert.equal(api.parseNumericSuffix("NO-DIGITS"), null);
+
+    const zipBlob = api.buildZipBlob([
+      { name: "barcode_001.png", data: new Uint8Array([137, 80, 78, 71]) },
+      { name: "readme.txt", data: "hello" }
+    ]);
+    assert.equal(zipBlob.opts.type, "application/zip");
+    assert.ok(zipBlob.parts.length >= 5);
+    // Verify PKZIP Local File Header (0x04034b50 -> 50 4b 03 04) and EOCD (0x06054b50 -> 50 4b 05 06)
+    const firstHeader = zipBlob.parts[0];
+    const lastHeader = zipBlob.parts[zipBlob.parts.length - 1];
+    assert.deepEqual([...firstHeader.slice(0, 4)], [0x50, 0x4b, 0x03, 0x04]);
+    assert.deepEqual([...lastHeader.slice(0, 4)], [0x50, 0x4b, 0x05, 0x06]);
   });
 });
 
@@ -722,11 +808,11 @@ describe("UI Controllers, Batch Pipeline, File Parser, I18N (EN/HE) & Theme (Lig
     assert.equal(elementsById.get("batchErrors").textContent, 0);
     assert.equal(elementsById.get("stickerGrid").children.length, 3);
 
-    // Test CSV file ingestion via parseFileAndAdd
+    // Test CSV file ingestion via parseFileAndAdd (including header row & RFC 4180 quoted field)
     elementsById.get("batchTextarea").value = "";
     api.parseFileAndAdd({
       name: "serials.csv",
-      _content: "CSV-01,extra\nCSV-02,extra\n"
+      _content: "barcode,title\n\"CSV-01,A\",extra\nCSV-02,extra\n"
     });
     assert.equal(elementsById.get("batchCount").textContent, 2);
     assert.match(elementsById.get("fileNameDisplay").textContent, /serials\.csv \(2 values\)/);

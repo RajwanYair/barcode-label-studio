@@ -12,7 +12,13 @@
     "url": "https://github.com/RajwanYair/barcode-label-studio/issues"
   },
   "scripts": {
-    "test": "node --test tests/barcode.test.js"
+    "test": "node --test tests/barcode.test.js",
+    "test:watch": "node --test --watch tests/barcode.test.js",
+    "serve": "python3 -m http.server 8080",
+    "gh:status": "gh release list --repo RajwanYair/barcode-label-studio && gh run list --repo RajwanYair/barcode-label-studio --limit 5"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   },
   "keywords": [
     "barcode",

@@ -106,9 +106,10 @@ $$d_{13} = \left( 10 - \left( \sum_{i=1}^{12} w_i \cdot d_i \bmod 10 \right) \ri
 
 - **Standard**: ISO/IEC 18004 Model 2
 - **Versions**: 1 (21×21) through 6 (41×41)
-- **Error correction**: Level M (~15% recovery)
-- **Modes**: Alphanumeric for `[0-9A-Z $%*+-./:]`; Byte mode for general ASCII/UTF-8.
+- **Error correction**: Level M (~15% recovery), with 15-bit BCH(15,5) format information (`QR_FORMAT_BITS_MASK0`) written around all three finder patterns.
+- **Modes**: Alphanumeric (`0010`) for `[0-9A-Z $%*+-./:]`; UTF-8 Byte mode (`0100`, encoded via `TextEncoder`) for general ASCII and Unicode (including Hebrew `עברית`).
 - **Reed–Solomon**: GF(2⁸) with primitive polynomial `x⁸ + x⁴ + x³ + x² + 1` (`0x11D`), exposed via `gfMul`, `rsGeneratePoly`, and `rsEncode`.
+- **Batch Archive Export**: `buildZipBlob` and `CRC32_TABLE` generate store-mode PKZIP (`0x04034B50` / `0x02014B50` / `0x06054B50`) archives with IEEE 802.3 CRC-32 checksums.
 
 ---
 

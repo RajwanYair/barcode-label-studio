@@ -166,21 +166,26 @@ Upcoming work is tracked in [ROADMAP.md](ROADMAP.md): UPC-A/EAN-8/Codabar, QR EC
 
 ```text
 barcode-label-studio/
-├── index.html                 # Self-contained production app
-├── SPEC.md                    # Technical specification
-├── ROADMAP.md                 # Sprint roadmap
-├── README.md                  # This file
-├── CHANGELOG.md               # Release history
-├── CONTRIBUTING.md            # Contributor guide
-├── SECURITY.md                # Security policy
-├── CODE_OF_CONDUCT.md         # Code of conduct
-├── LICENSE                    # MIT License
-├── package.json               # npm metadata & test script
-├── tests/barcode.test.js      # 35-test automated suite
-├── .github/workflows/ci.yml   # GitHub Actions CI
-├── .github/ISSUE_TEMPLATE/    # Issue templates
-├── .github/PULL_REQUEST_TEMPLATE.md
-└── assets/                    # SVG diagrams
+├── index.html                           # Self-contained production app
+├── SPEC.md                              # Technical specification
+├── ROADMAP.md                           # Sprint roadmap & issues backlog
+├── README.md                            # This file
+├── CHANGELOG.md                         # Release history
+├── CONTRIBUTING.md                      # Contributor guide
+├── SECURITY.md                          # Security policy
+├── CODE_OF_CONDUCT.md                   # Code of conduct
+├── LICENSE                              # MIT License
+├── package.json                         # npm metadata, scripts & engines
+├── tests/barcode.test.js                # Automated test & Meta-Guard suite
+├── .vscode/                             # VS Code settings, tasks, launch & extensions
+├── .github/copilot-instructions.md      # GitHub Copilot Chat workspace rules
+├── .github/prompts/                     # Reusable Copilot Chat prompt workflows
+├── .github/workflows/ci.yml             # GitHub Actions CI (Node 20 & 22 matrix)
+├── .github/workflows/release.yml        # Automated GitHub Release asset publisher
+├── .github/dependabot.yml               # Weekly GitHub Actions dependency updates
+├── .github/ISSUE_TEMPLATE/              # Issue templates & chooser config
+├── .github/PULL_REQUEST_TEMPLATE.md     # Pull request checklist
+└── assets/                              # SVG diagrams
 ```
 
 ---

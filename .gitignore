@@ -4,9 +4,17 @@ Thumbs.db
 *~
 *.swp
 *.swo
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 .idea/
 
-# Temporary / local exports
+# Temporary / local exports & accidental X11 captures
 *.tmp
 *.bak
+json,sys
+dist/
+release-assets/
+

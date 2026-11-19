@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 🚀 Launch Live Barcode Label Studio
+    url: https://rajwanyair.github.io/barcode-label-studio/
+    about: Open the hosted zero-backend web application on GitHub Pages
+  - name: 📐 Technical Specification (SPEC.md)
+    url: https://github.com/RajwanYair/barcode-label-studio/blob/main/SPEC.md
+    about: Review symbology encoding rules, architecture, and print presets
+  - name: 🗺️ Engineering Roadmap & Known Issues (ROADMAP.md)
+    url: https://github.com/RajwanYair/barcode-label-studio/blob/main/ROADMAP.md
+    about: Check planned sprints, partially completed items, and tracked issues before opening a duplicate

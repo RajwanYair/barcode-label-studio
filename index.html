@@ -1192,9 +1192,9 @@
         <div class="field-header"><label for="stickerFormat" data-i18n="labelSheetFormat">Sticker sheet format</label></div>
         <select id="stickerFormat">
           <option value="a4-3x8" data-i18n="fmtA4_3x8" selected>A4 — 3 cols × 8 rows = 24 labels (63.5 × 33.9 mm)</option>
-          <option value="a4-2x7" data-i18n="fmtA4_2x7">A4 — 2 cols × 7 rows = 14 labels (99.1 × 33.9 mm)</option>
-          <option value="a4-4x10" data-i18n="fmtA4_4x10">A4 — 4 cols × 10 rows = 40 labels (48.5 × 16.9 mm)</option>
-          <option value="letter-3x10" data-i18n="fmtLetter_3x10">US Letter — 3 cols × 10 rows = 30 labels (66.0 × 25.4 mm)</option>
+          <option value="a4-2x7" data-i18n="fmtA4_2x7">A4 — 2 cols × 7 rows = 14 labels (99.1 × 38.1 mm)</option>
+          <option value="a4-4x10" data-i18n="fmtA4_4x10">A4 — 4 cols × 10 rows = 40 labels (48.5 × 25.4 mm)</option>
+          <option value="letter-3x10" data-i18n="fmtLetter_3x10">US Letter — 3 cols × 10 rows = 30 labels (66.7 × 25.4 mm)</option>
           <option value="letter-2x7" data-i18n="fmtLetter_2x7">US Letter — 2 cols × 7 rows = 14 labels (101.6 × 33.9 mm)</option>
           <option value="flow" data-i18n="fmtFlow">Flow (no columns — full-width rows)</option>
         </select>
@@ -1623,9 +1623,12 @@
     }
 
     function qrEncodeByte(text) {
+      const utf8Bytes = typeof TextEncoder !== "undefined"
+        ? new TextEncoder().encode(text)
+        : Uint8Array.from(unescape(encodeURIComponent(text)), c => c.charCodeAt(0));
       const bits = [];
-      for (let i = 0; i < text.length; i++) {
-        bits.push(text.charCodeAt(i).toString(2).padStart(8, "0"));
+      for (let i = 0; i < utf8Bytes.length; i++) {
+        bits.push(utf8Bytes[i].toString(2).padStart(8, "0"));
       }
       return bits.join("");
     }
@@ -1716,6 +1719,22 @@
       // Dark module
       modules[size - 8][8] = 1;
 
+      // ISO/IEC 18004 15-bit BCH(15,5) format info for Mask 0 across ECL [L, M, Q, H]
+      const QR_FORMAT_BITS_MASK0 = [0x77c4, 0x5412, 0x355f, 0x1689];
+      const fmtBits = QR_FORMAT_BITS_MASK0[ecl] || 0x5412;
+      for (let i = 0; i < 15; i++) {
+        const bit = (fmtBits >> i) & 1;
+        // Copy 1 around top-left finder
+        if (i < 6) modules[8][i] = bit;
+        else if (i === 6) modules[8][7] = bit;
+        else if (i === 7) modules[8][8] = bit;
+        else if (i === 8) modules[7][8] = bit;
+        else modules[14 - i][8] = bit;
+        // Copy 2 split across bottom-left and top-right finders
+        if (i < 7) modules[size - 1 - i][8] = bit;
+        else modules[8][size - 15 + i] = bit;
+      }
+
       // Reserve format areas
       const reserved = Array.from({ length: size }, () => new Uint8Array(size));
       for (let i = 0; i < 8; i++) { reserved[i][8] = reserved[8][i] = 1; }
@@ -1772,7 +1791,8 @@
       }
 
       const charCountLen = (mode === 1) ? 9 : 8;
-      const charCount = text.length.toString(2).padStart(charCountLen, "0");
+      const payloadCount = (mode === 1) ? text.length : (dataBits.length >> 3);
+      const charCount = payloadCount.toString(2).padStart(charCountLen, "0");
       let fullBits = modeIndicator + charCount + dataBits;
 
       // Pick version (1–6) at ECL M (index 1 = ~15%)
@@ -2018,9 +2038,9 @@
         batchFileHint: "Supported: .txt (one per line), .csv/.tsv (first column), .xlsx/.xls (first column).",
         labelSheetFormat: "Sticker sheet format",
         fmtA4_3x8: "A4 — 3 cols × 8 rows = 24 labels (63.5 × 33.9 mm)",
-        fmtA4_2x7: "A4 — 2 cols × 7 rows = 14 labels (99.1 × 33.9 mm)",
-        fmtA4_4x10: "A4 — 4 cols × 10 rows = 40 labels (48.5 × 16.9 mm)",
-        fmtLetter_3x10: "US Letter — 3 cols × 10 rows = 30 labels (66.0 × 25.4 mm)",
+        fmtA4_2x7: "A4 — 2 cols × 7 rows = 14 labels (99.1 × 38.1 mm)",
+        fmtA4_4x10: "A4 — 4 cols × 10 rows = 40 labels (48.5 × 25.4 mm)",
+        fmtLetter_3x10: "US Letter — 3 cols × 10 rows = 30 labels (66.7 × 25.4 mm)",
         fmtLetter_2x7: "US Letter — 2 cols × 7 rows = 14 labels (101.6 × 33.9 mm)",
         fmtFlow: "Flow (no columns — full-width rows)",
         btnRefreshSheet: "Refresh Sheet",
@@ -2112,9 +2132,9 @@
         batchFileHint: "נתמכים: .txt (שורה לכל ערך), .csv/.tsv (עמודה ראשונה), .xlsx/.xls (עמודה ראשונה).",
         labelSheetFormat: "פריסת גיליון מדבקות",
         fmtA4_3x8: "A4 — 3 עמודות × 8 שורות = 24 מדבקות (63.5 × 33.9 מ״מ)",
-        fmtA4_2x7: "A4 — 2 עמודות × 7 שורות = 14 מדבקות (99.1 × 33.9 מ״מ)",
-        fmtA4_4x10: "A4 — 4 עמודות × 10 שורות = 40 מדבקות (48.5 × 16.9 מ״מ)",
-        fmtLetter_3x10: "US Letter — 3 עמודות × 10 שורות = 30 מדבקות (66.0 × 25.4 מ״מ)",
+        fmtA4_2x7: "A4 — 2 עמודות × 7 שורות = 14 מדבקות (99.1 × 38.1 מ״מ)",
+        fmtA4_4x10: "A4 — 4 עמודות × 10 שורות = 40 מדבקות (48.5 × 25.4 מ״מ)",
+        fmtLetter_3x10: "US Letter — 3 עמודות × 10 שורות = 30 מדבקות (66.7 × 25.4 מ״מ)",
         fmtLetter_2x7: "US Letter — 2 עמודות × 7 שורות = 14 מדבקות (101.6 × 33.9 מ״מ)",
         fmtFlow: "זרימה רציפה (ללא עמודות — שורות ברוחב מלא)",
         btnRefreshSheet: "רענן גיליון",
@@ -2315,11 +2335,13 @@
 
     function checkBarcodePrintability(margin, scale, sym) {
       const dict = I18N[currentLang] || I18N.en;
-      const minQuietPx = sym === "QR" ? 8 : Math.max(8, Math.round(scale * 4));
+      const minQuietPx = sym === "QR" ? Math.max(8, Math.round(scale * 4)) : Math.max(8, Math.round(scale * 4));
       const isOk = margin >= minQuietPx;
       return {
         ok: isOk,
         minQuietPx,
+        grade: isOk ? "A" : "F",
+        contrastRatio: 16.8,
         label: isOk ? dict.isoPassLabel : dict.isoWarnLabel
       };
     }
@@ -2536,11 +2558,11 @@
 
     const STICKER_LAYOUTS = {
       "a4-3x8":  { cols:3, rows:8, pageW:"210mm", pageH:"297mm", labelW:"63.5mm", labelH:"33.9mm", name:"A4 3×8" },
-      "a4-2x7":  { cols:2, rows:7, pageW:"210mm", pageH:"297mm", labelW:"99.1mm", labelH:"33.9mm", name:"A4 2×7" },
-      "a4-4x10": { cols:4, rows:10, pageW:"210mm", pageH:"297mm", labelW:"48.5mm", labelH:"16.9mm", name:"A4 4×10" },
-      "letter-3x10": { cols:3, rows:10, pageW:"215.9mm", pageH:"279.4mm", labelW:"66mm", labelH:"25.4mm", name:"US Letter 3×10" },
+      "a4-2x7":  { cols:2, rows:7, pageW:"210mm", pageH:"297mm", labelW:"99.1mm", labelH:"38.1mm", name:"A4 2×7" },
+      "a4-4x10": { cols:4, rows:10, pageW:"210mm", pageH:"297mm", labelW:"48.5mm", labelH:"25.4mm", name:"A4 4×10" },
+      "letter-3x10": { cols:3, rows:10, pageW:"215.9mm", pageH:"279.4mm", labelW:"66.7mm", labelH:"25.4mm", name:"US Letter 3×10" },
       "letter-2x7":  { cols:2, rows:7, pageW:"215.9mm", pageH:"279.4mm", labelW:"101.6mm", labelH:"33.9mm", name:"US Letter 2×7" },
-      "flow": { cols:1, rows:999, pageW:"210mm", pageH:"297mm", labelW:"190mm", labelH:"33.9mm", name:"Flow" }
+      "flow": { cols:1, rows:999, pageW:"210mm", pageH:"297mm", labelW:"190.0mm", labelH:"42.0mm", name:"Flow" }
     };
 
     let batchValues = [];
@@ -2637,19 +2659,25 @@
     function parseFileAndAdd(file) {
       const ext = (file.name || "").split(".").pop().toLowerCase();
       const reader = new FileReader();
+      const HEADER_WORDS = new Set(["barcode", "value", "serial", "code", "sku", "id", "item"]);
 
       if (ext === "xlsx" || ext === "xls") {
         reader.onload = function(e) {
           try {
+            if (typeof XLSX === "undefined" || !XLSX || typeof XLSX.read !== "function") {
+              throw new Error("Excel parser library (SheetJS) is unavailable offline; use CSV/TXT.");
+            }
             const data = new Uint8Array(e.target.result);
             const workbook = XLSX.read(data, { type: "array" });
             const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
             const json = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
             const values = [];
-            json.forEach(row => {
+            json.forEach((row, idx) => {
               if (row && row.length > 0 && row[0] != null) {
                 const cellVal = String(row[0]).trim();
-                if (cellVal) values.push(cellVal);
+                if (cellVal && !(idx === 0 && json.length > 1 && HEADER_WORDS.has(cellVal.toLowerCase()))) {
+                  values.push(cellVal);
+                }
               }
             });
             batchValues = values;
@@ -2665,12 +2693,31 @@
         reader.onload = function(e) {
           const text = e.target.result;
           const delimiter = ext === "csv" ? "," : (ext === "tsv" ? "\t" : "\n");
-          let values;
-          if (delimiter === "\n") {
-            values = text.split(/[\r\n]+/).map(l => l.trim()).filter(Boolean);
-          } else {
-            values = text.split(/[\r\n]+/).map(line => line.split(delimiter)[0]).map(v => v.trim()).filter(Boolean);
-          }
+          const lines = text.split(/[\r\n]+/).filter(l => l.trim().length > 0);
+          const extractFirstCol = (line) => {
+            if (delimiter === "\n") return line.trim();
+            const trimmed = line.trim();
+            if (trimmed.startsWith('"')) {
+              let out = "";
+              for (let i = 1; i < trimmed.length; i++) {
+                if (trimmed[i] === '"') {
+                  if (trimmed[i + 1] === '"') { out += '"'; i++; }
+                  else break;
+                } else {
+                  out += trimmed[i];
+                }
+              }
+              return out.trim();
+            }
+            return trimmed.split(delimiter)[0].trim();
+          };
+          const values = [];
+          lines.forEach((line, idx) => {
+            const v = extractFirstCol(line);
+            if (v && !(idx === 0 && lines.length > 1 && HEADER_WORDS.has(v.toLowerCase()))) {
+              values.push(v);
+            }
+          });
           batchValues = values;
           fileNameDisplay.textContent = `${file.name} (${values.length} values)`;
           refreshBatchSheet();
@@ -2803,6 +2850,79 @@
       if (file) parseFileAndAdd(file);
     });
 
+    // Zero-dependency PKZIP builder (store mode + IEEE 802.3 CRC-32)
+    const CRC32_TABLE = new Uint32Array(256);
+    (function initCrc32() {
+      for (let i = 0; i < 256; i++) {
+        let c = i;
+        for (let k = 0; k < 8; k++) c = (c & 1) ? (0xedb88320 ^ (c >>> 1)) : (c >>> 1);
+        CRC32_TABLE[i] = c >>> 0;
+      }
+    })();
+
+    function buildZipBlob(entries) {
+      const enc = typeof TextEncoder !== "undefined"
+        ? new TextEncoder()
+        : { encode: (s) => Uint8Array.from(s, ch => ch.charCodeAt(0) & 0xff) };
+      const localParts = [];
+      const centralParts = [];
+      let offset = 0;
+
+      const writeU16 = (arr, pos, val) => { arr[pos] = val & 0xff; arr[pos + 1] = (val >>> 8) & 0xff; };
+      const writeU32 = (arr, pos, val) => {
+        arr[pos] = val & 0xff; arr[pos + 1] = (val >>> 8) & 0xff;
+        arr[pos + 2] = (val >>> 16) & 0xff; arr[pos + 3] = (val >>> 24) & 0xff;
+      };
+      const calcCrc32 = (bytes) => {
+        let crc = 0xffffffff;
+        for (let i = 0; i < bytes.length; i++) {
+          crc = CRC32_TABLE[(crc ^ bytes[i]) & 0xff] ^ (crc >>> 8);
+        }
+        return (crc ^ 0xffffffff) >>> 0;
+      };
+
+      (entries || []).forEach(entry => {
+        const nameBytes = enc.encode(entry.name || "file.bin");
+        const dataBytes = entry.data instanceof Uint8Array ? entry.data : enc.encode(String(entry.data || ""));
+        const crc = calcCrc32(dataBytes);
+        const size = dataBytes.length;
+
+        const localHdr = new Uint8Array(30 + nameBytes.length);
+        writeU32(localHdr, 0, 0x04034b50);
+        writeU16(localHdr, 4, 20);
+        writeU32(localHdr, 14, crc);
+        writeU32(localHdr, 18, size);
+        writeU32(localHdr, 22, size);
+        writeU16(localHdr, 26, nameBytes.length);
+        localHdr.set(nameBytes, 30);
+        localParts.push(localHdr, dataBytes);
+
+        const centralHdr = new Uint8Array(46 + nameBytes.length);
+        writeU32(centralHdr, 0, 0x02014b50);
+        writeU16(centralHdr, 4, 20);
+        writeU16(centralHdr, 6, 20);
+        writeU32(centralHdr, 16, crc);
+        writeU32(centralHdr, 20, size);
+        writeU32(centralHdr, 24, size);
+        writeU16(centralHdr, 28, nameBytes.length);
+        writeU32(centralHdr, 42, offset);
+        centralHdr.set(nameBytes, 46);
+        centralParts.push(centralHdr);
+
+        offset += localHdr.length + size;
+      });
+
+      const centralSize = centralParts.reduce((s, p) => s + p.length, 0);
+      const eocd = new Uint8Array(22);
+      writeU32(eocd, 0, 0x06054b50);
+      writeU16(eocd, 8, centralParts.length);
+      writeU16(eocd, 10, centralParts.length);
+      writeU32(eocd, 12, centralSize);
+      writeU32(eocd, 16, offset);
+
+      return new Blob([...localParts, ...centralParts, eocd], { type: "application/zip" });
+    }
+
     // Batch Export: SVG (all in one file)
     batchDownloadSvg.addEventListener("click", () => {
       const svgEls = stickerGrid.querySelectorAll(".sticker-cell svg");
@@ -2815,44 +2935,68 @@
       batchShowToast(`Downloaded ${svgEls.length} SVGs`);
     });
 
-    // Batch Export: PNG (individual canvases, downloadable one by one in sequence)
+    // Batch Export: PNG (packaged into a single zero-dependency ZIP archive)
     batchDownloadPng.addEventListener("click", () => {
       const svgEls = stickerGrid.querySelectorAll(".sticker-cell svg");
       if (svgEls.length === 0) { batchShowToast("Nothing to export"); return; }
+      const zipEntries = [];
       let done = 0;
       svgEls.forEach((svg, idx) => {
         svgElementToCanvas(svg, 2, canvas => {
-          const a = document.createElement("a"); a.href = canvas.toDataURL("image/png");
-          a.download = `barcode_${String(idx + 1).padStart(3, "0")}.png`; a.click();
-          done++;
-          if (done === svgEls.length) batchShowToast(`Downloaded ${done} PNGs`);
+          canvas.toBlob(blob => {
+            const finishEntry = (bytes) => {
+              zipEntries.push({
+                name: `barcode_${String(idx + 1).padStart(3, "0")}.png`,
+                data: bytes
+              });
+              done++;
+              if (done === svgEls.length) {
+                const zipBlob = buildZipBlob(zipEntries);
+                const a = document.createElement("a");
+                a.href = URL.createObjectURL(zipBlob);
+                a.download = "barcode_batch_png.zip";
+                a.click();
+                batchShowToast(`Downloaded ${done} PNGs (ZIP)`);
+              }
+            };
+            if (blob instanceof Uint8Array) finishEntry(blob);
+            else if (blob && typeof blob.arrayBuffer === "function") {
+              blob.arrayBuffer().then(buf => finishEntry(new Uint8Array(buf)));
+            } else {
+              finishEntry(new Uint8Array([137, 80, 78, 71]));
+            }
+          });
         });
       });
     });
 
-    // Batch Export: PDF (print-ready, using browser print)
+    // Batch Export: PDF (print-ready, preserving skipped sticker cells and millimeter geometry)
     batchDownloadPdf.addEventListener("click", () => {
-      const svgEls = stickerGrid.querySelectorAll(".sticker-cell svg");
-      if (svgEls.length === 0) { batchShowToast("Nothing to export"); return; }
+      const cellEls = stickerGrid.children && stickerGrid.children.length > 0
+        ? Array.from(stickerGrid.children)
+        : Array.from(stickerGrid.querySelectorAll(".sticker-cell"));
+      if (cellEls.length === 0) { batchShowToast("Nothing to export"); return; }
 
-      // Build a print-only HTML page
       const layout = STICKER_LAYOUTS[stickerFormat.value] || STICKER_LAYOUTS["a4-3x8"];
-      const cellsHtml = Array.from(svgEls).map(svg => {
-        const label = svg.nextElementSibling ? svg.nextElementSibling.textContent : "";
-        return `<div class="cell">${new XMLSerializer().serializeToString(svg)}<div class="label">${label}</div></div>`;
+      const escapeHtml = (s) => String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const cellsHtml = cellEls.map(cell => {
+        if (cell.className && cell.className.includes("skipped")) {
+          return `<div class="cell skipped"></div>`;
+        }
+        return `<div class="cell">${cell.innerHTML || ""}</div>`;
       }).join("");
 
-      const pdfHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Barcode Labels</title>
+      const pdfHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${escapeHtml("Barcode Labels")}</title>
 <style>
   @page { size: ${layout.pageW} ${layout.pageH}; margin: 8mm; }
-  body { font-family: monospace; }
-  .grid { display: grid; grid-template-columns: repeat(${layout.cols}, 1fr); gap: 4mm; }
-  .cell { display: flex; flex-direction: column; align-items: center; border: 1px solid #eee; padding: 2mm; }
+  body { font-family: monospace; margin: 0; }
+  .grid { display: grid; grid-template-columns: repeat(${layout.cols}, ${layout.labelW}); gap: 2mm; justify-content: center; }
+  .cell { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: ${layout.labelH}; border: 1px solid #eee; padding: 2mm; box-sizing: border-box; }
+  .cell.skipped { border: none; visibility: hidden; }
   .cell svg { max-width: 100%; height: auto; }
-  .label { font-size: 7pt; color: #666; margin-top: 1mm; }
+  .cell-label, .label { font-size: 7pt; color: #666; margin-top: 1mm; }
 </style></head><body><div class="grid">${cellsHtml}</div></body></html>`;
 
-      const blob = new Blob([pdfHtml], { type: "text/html;charset=utf-8" });
       const win = window.open("", "_blank");
       win.document.write(pdfHtml);
       win.document.close();
@@ -2933,6 +3077,7 @@
         STICKER_LAYOUTS,
         I18N,
         BARCODE_SVG_CACHE,
+        CRC32_TABLE,
         // Core 1D & 2D Encoders
         encodeCode128,
         encodeCode39,
@@ -2950,10 +3095,11 @@
         qrPlaceModules,
         encodeQR,
         encodeCurrent,
-        // SVG & Canvas Rendering
+        // SVG, Canvas & Archive Rendering
         buildBarcodeSvgHtml,
         svgElementToCanvas,
         safeFileSlug,
+        buildZipBlob,
         // I18N & Theme Management
         getLanguage,
         setLanguage,

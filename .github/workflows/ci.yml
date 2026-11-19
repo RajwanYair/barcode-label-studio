@@ -16,16 +16,36 @@ concurrency:
 
 jobs:
   test:
-    name: Fast Zero-Dep Test & Meta-Guard Suite
+    name: Fast Zero-Dep Test & Meta-Guard Suite (Node ${{ matrix.node-version }})
     runs-on: ubuntu-latest
     timeout-minutes: 2
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20, 22]
     steps:
       - name: Shallow checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
       - name: Run 100% Function, Config, SVG & Documentation Test Suite
         run: npm test
+
+      - name: Publish CI Gate Summary
+        if: always()
+        run: |
+          {
+            echo "### ✅ Barcode Label Studio — CI Gate (Node ${{ matrix.node-version }})"
+            echo "- **Commit**: \`${GITHUB_SHA}\`"
+            echo "- **Branch / Ref**: \`${GITHUB_REF_NAME}\`"
+            echo "- **Node Runtime**: \`$(node -v)\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
 
 
