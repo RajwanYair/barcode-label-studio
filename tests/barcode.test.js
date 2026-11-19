@@ -461,12 +461,22 @@ describe("Repository Configs, Workflows, Documentation & SVG Assets Integrity", 
     }
   });
 
-  test("index.html includes SEO, OpenGraph, Twitter Card, favicon, and responsive CSS", () => {
+  test("index.html includes SEO, OpenGraph, Twitter Card, favicon, and mobile-last responsive CSS cascade", () => {
     assert.match(htmlContent, /<link rel="canonical" href="https:\/\/rajwanyair\.github\.io\/barcode-label-studio\/"/);
     assert.match(htmlContent, /<meta property="og:title"/);
     assert.match(htmlContent, /<meta property="og:image"/);
     assert.match(htmlContent, /<meta name="twitter:card" content="summary_large_image"/);
     assert.match(htmlContent, /<link rel="icon" type="image\/svg\+xml"/);
+
+    // Ensure @media (max-width: 1024px) and @media (max-width: 640px) come AFTER base .batch-controls (1fr 1fr 1fr)
+    const baseBatchIdx = htmlContent.indexOf("grid-template-columns: 1fr 1fr 1fr");
+    const media1024Idx = htmlContent.indexOf("@media (max-width: 1024px)");
+    const media640Idx = htmlContent.indexOf("@media (max-width: 640px)");
+    assert.ok(baseBatchIdx > 0, "Expected base .batch-controls 3-column grid rule");
+    assert.ok(
+      media1024Idx > baseBatchIdx && media640Idx > media1024Idx,
+      "Responsive @media (max-width: 1024px/640px) queries must appear AFTER base .batch-controls rules so mobile 1-column layout is never overridden"
+    );
   });
 });
 
@@ -725,6 +735,7 @@ describe("SVG Compositor, Custom Text, Logo Overlay & Canvas Helpers", () => {
     assert.equal(api.safeFileSlug("A".repeat(80)).length, 40);
 
     assert.deepEqual({ ...api.parseNumericSuffix("SN-00105") }, { prefix: "SN-", num: 105, digits: 5 });
+    assert.deepEqual({ ...api.parseNumericSuffix("SN-010-A") }, { prefix: "SN-", num: 10, digits: 3, suffix: "-A" });
     assert.equal(api.parseNumericSuffix("NO-DIGITS"), null);
 
     const zipBlob = api.buildZipBlob([
@@ -831,6 +842,12 @@ describe("UI Controllers, Batch Pipeline, File Parser, I18N (EN/HE) & Theme (Lig
     assert.equal(elementsById.get("stickerGrid").children.length, 2 + 3);
     assert.equal(elementsById.get("stickerGrid").children[0].className, "sticker-cell skipped");
     elementsById.get("skipCountInput").value = "0";
+
+    // Test clearing batchTextarea resets batchCount to 0 and shows batchEmpty
+    elementsById.get("batchTextarea").value = "";
+    api.refreshBatchSheet();
+    assert.equal(elementsById.get("batchCount").textContent, 0);
+    assert.equal(elementsById.get("batchEmpty").style.display, "block");
   });
 
   test("checkBarcodePrintability, cycleStageZoom, toggleLaserScanline, and handleKeyboardShortcuts enhance studio UX", () => {

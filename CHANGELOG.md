@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Batch PDF skipped-sticker preservation (`ISS-04`)**: `batchDownloadPdf` now preserves `.sticker-cell.skipped` placeholders, escapes HTML, and enforces physical `mm` grid dimensions.
 - **Sticker preset dimension parity (`ISS-05`)**: synchronized `STICKER_LAYOUTS` and bilingual option labels (`a4-2x7` `38.1mm`, `a4-4x10` `25.4mm`, `letter-3x10` `66.7mm`, `flow` `42.0mm`) with [README.md](README.md).
 - **CSV/Excel import resilience (`ISS-06`)**: `parseFileAndAdd()` now parses RFC 4180 quoted CSV fields, skips header rows, and guards against offline `XLSX` unavailability.
+- **Mobile phone view for Batch Text List & Number Range (`ISS-09`)**: moved responsive `@media (max-width: 1024px)` and `@media (max-width: 640px)` rules after base `.batch-controls` rules so phone view stacks panels at 100% width instead of crushing Text List (`35px`) and Number Range (`25px`) into 3 columns; stacked `.range-inputs` vertically on phones, added a one-tap `#batchClearBtn` on Text List, synchronized `batchTextarea` on clear/file import, and added prefix+suffix (`SN-010-A` to `SN-014-A`) and descending range support.
 
 ## [1.0.0] - 2026-11-17
 
